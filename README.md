@@ -28,6 +28,6 @@ docker run -it -d -p 8008:8008 -t scoring:test
 
 Docker images are quite bug. Julia taking ~400M. Not super prod appealing. 
 
-DataFrames transforms won't recignize Functors as Function. Need Functors to inherit from Functions to work. 
+DataFrames transforms don't recognize Functors as Function. Need Functors to inherit from Functions to work. 
 
-Vector of transformations will losse their types once imported back from BSON, resulting in error as the type is needed by DataFrames to dispatch to appropriate method. 
+Vector of transformations will losse their types once imported back from BSON, resulting in error as the type is needed by DataFrames to dispatch to appropriate method. Need to restrict to single transformation function per step (no big deal since multi-thread isn't taking advantage of such vec transforms ATM). 
