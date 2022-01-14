@@ -7,10 +7,10 @@ using BSON
 function build_preproc(df; norm_feats)
 
     df_fit = copy(df) # shoud not mutate the input df
-    preproc = ScoringEngine.Preproc([])
+    preproc = Preproc([])
 
     # density transformation
-    push!(preproc.layers, ["population", "town_surface_area"] => ScoringEngine.density => "density")
+    push!(preproc.layers, ["population", "town_surface_area"] => density => "density")
     push!(preproc.layers, "density" => (x -> log.(max.(x, 0.01))) => "density")
     df_fit = preproc(df_fit, 1:2)
 
@@ -27,7 +27,7 @@ function build_preproc(df; norm_feats)
     df_fit = preproc(df_fit, 3)
 
     # normalise features
-    norms = [feat => ScoringEngine.Normalizer(df_fit[:, feat]) => feat for feat in norm_feats]
+    norms = [feat => Normalizer(df_fit[:, feat]) => feat for feat in norm_feats]
     push!(preproc.layers, norms...)
     df_fit = preproc(df_fit, length(preproc.layers)-length(norms)+1:length(preproc.layers))
 

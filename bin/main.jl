@@ -13,17 +13,14 @@ using DataFrames
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
-const preproc = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngine)[:preproc]
+const preproc_flux = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngineDemo)[:preproc]
+const preproc_gbt = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngineDemo)[:preproc]
 
-const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), ScoringEngine)[:preproc_adapt]
-const preproc_adapt_gbt = BSON.load(joinpath(assets_path, "preproc-adapt-gbt.bson"), ScoringEngine)[:preproc_adapt]
+const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), ScoringEngineDemo)[:preproc_adapt]
+const preproc_adapt_gbt = BSON.load(joinpath(assets_path, "preproc-adapt-gbt.bson"), ScoringEngineDemo)[:preproc_adapt]
 
-const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngine)[:model]
-const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngine)[:model]
-
-# test
-# df_tot = ScoringEngine.load_data(joinpath(pkgdir(ScoringEngine), "assets", "training_data.csv"))
-# df = df_tot[1:2,:]
+const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
+const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
 
 @info "Initializing scoring service"
 function welcome(req::HTTP.Request)
@@ -32,8 +29,8 @@ end
 
 function score_post(req::HTTP.Request)
     df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
-    infer_flux = df |> preproc |> preproc_adapt_flux |> model_flux |> ScoringEngine.logit
-    infer_gbt = ScoringEngine.predict(model_gbt, df |> preproc |> preproc_adapt_gbt)
+    infer_flux = df |> preproc_flux |> preproc_adapt_flux |> model_flux |> ScoringEngineDemo.logit
+    infer_gbt = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> preproc_adapt_gbt)
     res = Dict(:score_flux => infer_flux, :score_gbt => infer_gbt)
     return HTTP.Response(200, JSON3.write(res))
 end

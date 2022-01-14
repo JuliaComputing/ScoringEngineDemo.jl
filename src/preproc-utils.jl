@@ -4,8 +4,6 @@ using Statistics: mean, std
 using StatsBase: sample
 using BSON
 
-# const targetname = "event"
-
 """
 Preproc
 Preproc functor. Holds a vector of transform operations
