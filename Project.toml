@@ -1,6 +1,6 @@
-name = "ScoringEngine"
+name = "ScoringEngineDemo"
 uuid = "2e1be78e-94a1-43b6-9407-8099e760a385"
-authors = ["jeremie.db <jeremie.db@evovest.com>"]
+authors = ["jeremie.db <jeremie.bouchard@juliacomputing.com>"]
 version = "0.1.0"
 
 [deps]

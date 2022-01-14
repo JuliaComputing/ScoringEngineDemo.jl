@@ -1,4 +1,4 @@
-module ScoringEngine
+module ScoringEngineDemo
 
 using DataFrames
 using Flux

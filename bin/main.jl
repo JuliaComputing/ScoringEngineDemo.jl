@@ -1,5 +1,5 @@
 @info "Initializing packages"
-using ScoringEngine
+using ScoringEngineDemo
 using BSON
 using HTTP
 using Sockets
@@ -8,11 +8,11 @@ using JSONTables
 using DataFrames
 
 @info "Initializing assets"
-@info "pkgdir(ScoringEngine): " pkgdir(ScoringEngine)
+@info "pkgdir(ScoringEngineDemo): " pkgdir(ScoringEngineDemo)
 @info "@__DIR__: " @__DIR__
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
-const assets_path = joinpath(pkgdir(ScoringEngine), "assets")
+const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
 const preproc = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngine)[:preproc]
 
 const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), ScoringEngine)[:preproc_adapt]
