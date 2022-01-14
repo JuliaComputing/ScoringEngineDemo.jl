@@ -30,8 +30,8 @@ preproc_adapt_flux = ScoringEngine.build_preproc_adapt_flux(norm_feats, targetna
 BSON.bson("assets/preproc.bson", Dict(:preproc => preproc))
 BSON.bson("assets/preproc-adapt-flux.bson", Dict(:preproc_adapt => preproc_adapt_flux))
 
-preproc(df_train)
-preproc(df_eval)
+df_train = preproc(df_train)
+df_eval = preproc(df_eval)
 
 x_train, y_train = preproc_adapt_flux(df_train, true)
 x_eval, y_eval = preproc_adapt_flux(df_eval, true)
@@ -81,11 +81,3 @@ for i in 1:25
 end
 
 BSON.bson("assets/model-flux.bson", Dict(:model => m))
-
-
-# preproc! = BSON.load("assets/preproc.bson", ScoringEngine)[:preproc!]
-# preproc_adapt_flux = BSON.load("assets/preproc_adapt_flux.bson", ScoringEngine)[:preproc_adapt_flux]
-
-# preproc!(df_eval)
-# preproc_adapt_flux(df_eval)
-# preproc_adapt_flux(df_eval, true)

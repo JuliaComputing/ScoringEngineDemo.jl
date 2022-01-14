@@ -28,8 +28,8 @@ preproc_adapt_gbt = ScoringEngine.build_preproc_adapt_gbt(norm_feats, targetname
 BSON.bson("assets/preproc.bson", Dict(:preproc => preproc))
 BSON.bson("assets/preproc-adapt-gbt.bson", Dict(:preproc_adapt => preproc_adapt_gbt))
 
-preproc(df_train)
-preproc(df_eval)
+df_train = preproc(df_train)
+df_eval = preproc(df_eval)
 
 x_train, y_train = preproc_adapt_gbt(df_train, true)
 x_eval, y_eval = preproc_adapt_gbt(df_eval, true)

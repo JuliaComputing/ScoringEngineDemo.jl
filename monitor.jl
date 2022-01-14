@@ -19,7 +19,7 @@ scores_gbt = Float64.(JSON3.read(req.body, Dict)["score_gbt"])
 scatter(Float32.(scores_flux))
 
 init = [0.0]
-p_node = Node(init)
+p_node = Node(init) 
 p_node_B = Node(init)
 fig, ax = density(p_node, color = (:slategray, 0.3));
 density!(p_node_B, color = (:navy, 0.3))
