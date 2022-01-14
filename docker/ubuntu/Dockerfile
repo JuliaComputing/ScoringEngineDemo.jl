@@ -31,4 +31,4 @@ WORKDIR /usr/src/app
 
 RUN julia -e 'using Pkg; Pkg.develop(path = "."); Pkg.instantiate()' 
 
-ENTRYPOINT ["julia", "./main.jl"]
+ENTRYPOINT ["julia", "./bin/main.jl"]
