@@ -20,12 +20,13 @@ Random.seed!(123)
 df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
 
 norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
-    "population", "town_surface_area", "pol_no_claims_discount", "density", "pol_coverage"]
+    "population", "town_surface_area", "pol_no_claims_discount",
+    "pol_coverage", "density", "drv_exp_yrs", "drv_sex1", "drv_sex2_A"]
 
 preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
 preproc_adapt_gbt = ScoringEngineDemo.build_preproc_adapt_gbt(norm_feats, targetname)
 
-BSON.bson("assets/preproc.bson", Dict(:preproc => preproc))
+BSON.bson("assets/preproc-gbt.bson", Dict(:preproc => preproc))
 BSON.bson("assets/preproc-adapt-gbt.bson", Dict(:preproc_adapt => preproc_adapt_gbt))
 
 df_train = preproc(df_train)
@@ -41,7 +42,7 @@ config = EvoTreeRegressor(
     max_depth = 6, min_weight = 1.0,
     rowsample = 0.5, colsample = 0.8)
 
-m = fit_evotree(config, x_train, y_train, X_eval = x_eval, Y_eval = y_eval, print_every_n = 25, early_stopping_rounds=100)
+m = fit_evotree(config, x_train, y_train, X_eval = x_eval, Y_eval = y_eval, print_every_n = 25, early_stopping_rounds = 100)
 predict(m, x_eval)
 
 BSON.bson("assets/model-gbt.bson", Dict(:model => m))

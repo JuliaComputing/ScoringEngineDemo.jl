@@ -52,11 +52,6 @@ function build_preproc_adapt_gbt(featnames, targetname)
 end
 
 """
-density(pop, area)
-"""
-density(pop, area) = pop ./ area
-
-"""
 Normalizer
 
 Constructor store normalisation parameters based on input vector mean and std. 
@@ -85,3 +80,43 @@ function data_splits(df, train_perc)
     df_eval = df[InvertedIndex(train_id), :]
     return df_train, df_eval
 end
+
+
+"""
+density(pop, area)
+"""
+density(pop, area) = pop ./ area
+
+
+"""
+years of experience
+"""
+age_diff(age1, age2) = age2 .- age1
+drv_experience_yrs = ["drv_age_lic1", "drv_age1"] => age_diff => "drv_exp_yrs"
+
+"""
+    Categorical Mappings
+"""
+# drv_sex1
+drv_sex1_dict = Dict{String,Float64}(
+        "M" => 0,
+        "F" => 1)
+
+drv_sex1_map(x) = get(drv_sex1_dict, x, 0)
+drv_sex1_mapping = "drv_sex1" => ByRow(drv_sex1_map) => "drv_sex1"
+
+# drv_sex2 A
+drv_sex2_dict_A = Dict{String,Float64}(
+    "0" => 0,        
+    "M" => 1,
+    "F" => 1)
+drv_sex2_map_A(x) = get(drv_sex2_dict_A, x, 0)
+drv_sex2_mapping_A = "drv_sex2" => ByRow(drv_sex2_map_A) => "drv_sex2_A"
+
+# drv_sex2 B
+drv_sex2_dict_B = Dict{String,Float64}(
+    "0" => 0,        
+    "M" => 0,
+    "F" => 1)
+drv_sex2_map_B(x) = get(drv_sex2_dict_B, x, 0)
+drv_sex2_mapping_B = "drv_sex2" => ByRow(drv_sex2_map_B) => "drv_sex2_B"

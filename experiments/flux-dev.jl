@@ -22,7 +22,8 @@ Random.seed!(123)
 df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
 
 norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
-    "population", "town_surface_area", "pol_no_claims_discount", "density", "pol_coverage"]
+    "population", "town_surface_area", "pol_no_claims_discount",
+    "pol_coverage", "density", "drv_exp_yrs"]
 
 preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
 preproc_adapt_flux = ScoringEngineDemo.build_preproc_adapt_flux(norm_feats, targetname)
@@ -40,7 +41,7 @@ dtrain = Flux.Data.DataLoader((x_train, y_train), batchsize = 1024, shuffle = tr
 deval = Flux.Data.DataLoader((x_eval, y_eval), batchsize = 1024, shuffle = false)
 
 m = Chain(
-    Dense(10, 128, relu),
+    Dense(size(x_train, 1), 128, relu),
     Dense(128, 32, relu),
     SkipConnection(Dense(32, 32, relu), +),
     Dense(32, 1),

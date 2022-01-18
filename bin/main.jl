@@ -13,8 +13,8 @@ using DataFrames
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngineDemo)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc.bson"), ScoringEngineDemo)[:preproc]
+const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
+const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
 
 const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), ScoringEngineDemo)[:preproc_adapt]
 const preproc_adapt_gbt = BSON.load(joinpath(assets_path, "preproc-adapt-gbt.bson"), ScoringEngineDemo)[:preproc_adapt]
