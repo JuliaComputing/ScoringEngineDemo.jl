@@ -26,14 +26,17 @@ function build_preproc(df; norm_feats)
     push!(preproc.layers, cov_mapping)
     df_fit = preproc(df_fit, 3)
 
-    push!(preproc.layers, drv_sex1_mapping)
+    push!(preproc.layers, drv_sex1)
     df_fit = preproc(df_fit, 4)
 
-    push!(preproc.layers, drv_experience_yrs)
+    push!(preproc.layers, drv_exp_yrs)
     df_fit = preproc(df_fit, 5)
 
-    push!(preproc.layers, drv_sex2_mapping_A)
+    push!(preproc.layers, has_drv2)
     df_fit = preproc(df_fit, 6)
+
+    push!(preproc.layers, is_drv2_male)
+    df_fit = preproc(df_fit, 7)
 
     # normalise features
     norms = [feat => Normalizer(df_fit[:, feat]) => feat for feat in norm_feats]

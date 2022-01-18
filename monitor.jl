@@ -1,11 +1,11 @@
-using ScoringEngine
+using ScoringEngineDemo
 using HTTP
 using JSON3
 using JSONTables
 using DataFrames
 using CairoMakie
 
-df_tot = ScoringEngine.load_data(joinpath(pkgdir(ScoringEngine), "assets", "training_data.csv"))
+df_tot = ScoringEngineDemo.load_data(joinpath(pkgdir(ScoringEngineDemo), "assets", "training_data.csv"))
 df = df_tot[1:2, :]
 body = JSON3.write(arraytable(df))
 JSON3.read(body) |> jsontable |> DataFrame
