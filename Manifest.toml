@@ -67,10 +67,10 @@ uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.4.1"
 
 [[CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings"]
-git-tree-sha1 = "fbee070c56e0096dac13067eca8181ec148468e1"
+deps = ["Dates", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode"]
+git-tree-sha1 = "b83aa3f513be680454437a0eee21001607e5d983"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.1"
+version = "0.8.5"
 
 [[CUDA]]
 deps = ["AbstractFFTs", "Adapt", "BFloat16s", "CEnum", "CompilerSupportLibraries_jll", "ExprTools", "GPUArrays", "GPUCompiler", "LLVM", "LazyArtifacts", "Libdl", "LinearAlgebra", "Logging", "Printf", "Random", "Random123", "RandomNumbers", "Reexport", "Requires", "SparseArrays", "SpecialFunctions", "TimerOutputs"]
@@ -244,12 +244,6 @@ git-tree-sha1 = "24565044e60bc48a7562e75bcf14f084901dc0b6"
 uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
 version = "0.1.7"
 
-[[FilePathsBase]]
-deps = ["Compat", "Dates", "Mmap", "Printf", "Test", "UUIDs"]
-git-tree-sha1 = "04d13bfa8ef11720c24e4d840c0033d145537df7"
-uuid = "48062228-2e41-5def-b9a4-89aafe57970f"
-version = "0.9.17"
-
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
 git-tree-sha1 = "8756f9935b7ccc9064c6eef0bff0ad643df733a3"
@@ -329,12 +323,6 @@ deps = ["Test"]
 git-tree-sha1 = "098e4d2c533924c921f9f9847274f2ad89e018b8"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.0"
-
-[[InlineStrings]]
-deps = ["Parsers"]
-git-tree-sha1 = "8d70835a3759cdd75881426fced1508bb7b7e1b6"
-uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.1.1"
 
 [[InteractiveUtils]]
 deps = ["Markdown"]
@@ -549,9 +537,9 @@ version = "0.11.5"
 
 [[Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "92f91ba9e5941fc781fecf5494ac1da87bdac775"
+git-tree-sha1 = "bfd7d8c7fd87f04543810d9cbd3995972236ba1b"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.2.0"
+version = "1.1.2"
 
 [[Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
@@ -763,10 +751,10 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TimeZones]]
-deps = ["Dates", "Downloads", "InlineStrings", "LazyArtifacts", "Mocking", "Printf", "RecipesBase", "Serialization", "Unicode"]
-git-tree-sha1 = "0f1017f68dc25f1a0cb99f4988f78fe4f2e7955f"
+deps = ["Dates", "Future", "LazyArtifacts", "Mocking", "Pkg", "Printf", "RecipesBase", "Serialization", "Unicode"]
+git-tree-sha1 = "a5688ffdbd849a98503c6650effe79fe89a41252"
 uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
-version = "1.7.1"
+version = "1.5.9"
 
 [[TimerOutputs]]
 deps = ["ExprTools", "Printf"]
@@ -791,12 +779,6 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
-
-[[WeakRefStrings]]
-deps = ["DataAPI", "InlineStrings", "Parsers"]
-git-tree-sha1 = "c69f9da3ff2f4f02e811c3323c22e5dfcb584cfa"
-uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
-version = "1.4.1"
 
 [[ZipFile]]
 deps = ["Libdl", "Printf", "Zlib_jll"]
