@@ -10,7 +10,7 @@ Demonstration of a model deployment workflow.
 Ad-hoc Monitoring examples:
 
 - Calling the API
-- Animation of model spread through time
+- Model explanation with SHAP
 
 Work derived from [Insurance-pricing-game](https://www.aicrowd.com/challenges/insurance-pricing-game) challenge.
 
