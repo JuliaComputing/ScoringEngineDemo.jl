@@ -14,15 +14,6 @@ function build_preproc(df; norm_feats)
     push!(preproc.layers, "density" => (x -> log.(max.(x, 0.01))) => "density")
     df_fit = preproc(df_fit, 1:2)
 
-    # coverage maping
-    pol_cov_dict = Dict{String,Float64}(
-        "Min" => 1,
-        "Med1" => 2,
-        "Med2" => 3,
-        "Max" => 4)
-
-    pol_cov_map(x) = get(pol_cov_dict, x, 4.0)
-    cov_mapping = "pol_coverage" => ByRow(pol_cov_map) => "pol_coverage"
     push!(preproc.layers, cov_mapping)
     df_fit = preproc(df_fit, 3)
 

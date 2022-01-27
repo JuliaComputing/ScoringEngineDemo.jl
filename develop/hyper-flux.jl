@@ -1,31 +1,28 @@
 @info "Initializing packages"
 using ScoringEngineDemo
 using BSON
-using JSON3
 using CSV
 using DataFrames
 using Random
 
 using Distributed
-# addprocs(2)
 
-file_path = joinpath(@__DIR__, "hyper-flux.csv")
-ENV["RESULTS_FILE"] = file_path
-
-@info "nworkers" nworkers()
-@info "workers" workers()
 
 @everywhere using Statistics: mean
 @everywhere using Flux
 @everywhere using Flux: update!
 
+results_path = joinpath(@__DIR__, "results")
+mkdir(results_path)
+ENV["RESULTS_FILE"] = results_path
+
+@info "nworkers" nworkers()
+@info "workers" workers()
+
 @info "Initializing assets"
 const assets_path = joinpath(@__DIR__, "..", "assets")
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), @__MODULE__)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), @__MODULE__)[:preproc]
-
-const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), @__MODULE__)[:preproc_adapt]
-const preproc_adapt_gbt = BSON.load(joinpath(assets_path, "preproc-adapt-gbt.bson"), @__MODULE__)[:preproc_adapt]
+const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), @__MODULE__)[:adapter]
 
 df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
 
@@ -39,11 +36,8 @@ df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
 df_train = preproc_flux(df_train)
 df_eval = preproc_flux(df_eval)
 
-x_train, y_train = preproc_adapt_flux(df_train, true)
-x_eval, y_eval = preproc_adapt_flux(df_eval, true)
-
-dtrain = Flux.Data.DataLoader((x_train, y_train), batchsize = 1024, shuffle = true)
-deval = Flux.Data.DataLoader((x_eval, y_eval), batchsize = 1024, shuffle = false)
+x_train, y_train = adapter_flux(df_train, true)
+x_eval, y_eval = adapter_flux(df_eval, true)
 
 @everywhere function loss(m, x, y)
     l = mean(exp.(m(x)) .- m(x) .* y)
@@ -72,7 +66,7 @@ end
     println(metric)
 end
 
-@everywhere function fit(num_feats, h1, dtrain, deval)
+@everywhere function fit(; nrounds, num_feats, h1, dtrain, deval)
 
     m = Chain(
         Dense(num_feats, h1, relu),
@@ -85,20 +79,19 @@ end
     opt = ADAM(5e-4)
     θ = params(m)
 
-    for i in 1:25
+    for i in 1:nrounds
         train_loop!(m, θ, opt, loss, dtrain = dtrain, deval = deval)
     end
 
     eval_metric = logloss(deval, m)
-    return eval_metric
+    return (
+        eval_metric = eval_metric,
+        h1 = h1,
+        m = m)
 end
 
 num_feats = size(x_train, 1)
-@time fit(num_feats, 128, dtrain, deval)
-
-# @spawnat 2 dtrain = dtrain
-# [@spawnat p dtrain = dtrain for p in workers()]
-# [@spawnat p deval = deval for p in workers()]
+nrounds = 25
 
 [@spawnat p x_train = x_train for p in workers()]
 [@spawnat p y_train = y_train for p in workers()]
@@ -110,8 +103,14 @@ length(h1_list)
 @time results = pmap(h1_list) do h1
     dtrain = Flux.Data.DataLoader((x_train, y_train), batchsize = 1024, shuffle = true)
     deval = Flux.Data.DataLoader((x_eval, y_eval), batchsize = 1024, shuffle = false)
-    fit(num_feats, h1, dtrain, deval)
+    fit(; nrounds, num_feats, h1, dtrain, deval)
 end
 
-df_results = DataFrame("eval_metric" => results, "h1" => h1_list)
-CSV.write(file_path, df_results)
+df_results = map(results) do n
+    (h1 = n[:h1], eval_metric = n[:eval_metric])
+end |> DataFrame
+
+m_best = results[findmin(df_results[:, :eval_metric])[2]][:m]
+
+CSV.write(joinpath(results_path, "hyper-flux.csv"), df_results)
+BSON.bson(joinpath(results_path, "model-flux.bson"), Dict(:model => m_best))

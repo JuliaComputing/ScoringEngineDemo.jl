@@ -2,7 +2,7 @@
 
 Demonstration of a model deployment workflow.
 
-- Reprodicible preprocessing pipeline
+- Reproducible preprocessing pipeline
 - Flux MLP & EvoTrees logistics models
 - Preproc/model inference through HTTP.jl
 - Dockerfile build receipe

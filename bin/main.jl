@@ -27,11 +27,17 @@ function welcome(req::HTTP.Request)
     return HTTP.Response(200, JSON3.write("Service is active"))
 end
 
-function score_post(req::HTTP.Request)
+function score_flux(req::HTTP.Request)
     df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
-    infer_flux = df |> preproc_flux |> preproc_adapt_flux |> model_flux |> ScoringEngineDemo.logit
-    infer_gbt = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> preproc_adapt_gbt)
-    res = Dict(:score_flux => infer_flux, :score_gbt => infer_gbt)
+    score = df |> preproc_flux |> preproc_adapt_flux |> model_flux |> ScoringEngineDemo.logit
+    res = Dict(:score => score)
+    return HTTP.Response(200, JSON3.write(res))
+end
+
+function score_gbt(req::HTTP.Request)
+    df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
+    score = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> preproc_adapt_gbt)
+    res = Dict(:score => score)
     return HTTP.Response(200, JSON3.write(res))
 end
 
@@ -39,8 +45,8 @@ end
 const SCORING_ROUTER = HTTP.Router()
 
 HTTP.@register(SCORING_ROUTER, "GET", "/", welcome)
-HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/risk", score_post)
-# HTTP.@register(SCORING_ROUTER, "GET", "/api/v1/risk", score_get)
+HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/flux", score_flux)
+HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/gbt", score_gbt)
 
 @info "Ready ▷"
 HTTP.serve(SCORING_ROUTER, ip"0.0.0.0", 8008)
