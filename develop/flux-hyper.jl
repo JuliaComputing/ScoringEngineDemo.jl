@@ -7,9 +7,13 @@ using DataFrames
 using Random
 
 using Distributed
-addprocs(8)
-nworkers()
-workers()
+# addprocs(2)
+
+file_path = joinpath(@__DIR__, "hyper-flux.csv")
+ENV["RESULTS_FILE"] = file_path
+
+@info "nworkers" nworkers()
+@info "workers" workers()
 
 @everywhere using Statistics: mean
 @everywhere using Flux
@@ -110,5 +114,4 @@ length(h1_list)
 end
 
 df_results = DataFrame("eval_metric" => results, "h1" => h1_list)
-CSV.write("hyper-flux.csv", df_results)
-ENV["RESULTS_FILE"] = "hyper-flux.csv"
+CSV.write(file_path, df_results)
