@@ -16,8 +16,8 @@ const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
 const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
 
-const preproc_adapt_flux = BSON.load(joinpath(assets_path, "preproc-adapt-flux.bson"), ScoringEngineDemo)[:preproc_adapt]
-const preproc_adapt_gbt = BSON.load(joinpath(assets_path, "preproc-adapt-gbt.bson"), ScoringEngineDemo)[:preproc_adapt]
+const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineDemo)[:adapter]
+const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineDemo)[:adapter]
 
 const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
 const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
@@ -29,14 +29,14 @@ end
 
 function score_flux(req::HTTP.Request)
     df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
-    score = df |> preproc_flux |> preproc_adapt_flux |> model_flux |> ScoringEngineDemo.logit
+    score = df |> preproc_flux |> adapter_flux |> model_flux |> ScoringEngineDemo.logit
     res = Dict(:score => score)
     return HTTP.Response(200, JSON3.write(res))
 end
 
 function score_gbt(req::HTTP.Request)
     df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
-    score = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> preproc_adapt_gbt)
+    score = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> adapter_gbt)
     res = Dict(:score => score)
     return HTTP.Response(200, JSON3.write(res))
 end
