@@ -1,3 +1,6 @@
+@info "@__DIR__: " @__DIR__
+@info "readdir(@__DIR__): " readdir(@__DIR__)
+
 @info "Initializing packages"
 using ScoringEngineDemo
 using BSON
@@ -9,8 +12,6 @@ using DataFrames
 
 @info "Initializing assets"
 @info "pkgdir(ScoringEngineDemo): " pkgdir(ScoringEngineDemo)
-@info "@__DIR__: " @__DIR__
-@info "readdir(@__DIR__): " readdir(@__DIR__)
 
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]

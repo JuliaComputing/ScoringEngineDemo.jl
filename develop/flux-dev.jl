@@ -6,9 +6,11 @@ using StatsBase: sample
 using BSON
 using CairoMakie
 using Random
+using CUDA
 
 using Flux
 using Flux: update!
+using ParameterSchedulers
 
 global targetname = "event"
 
@@ -28,19 +30,19 @@ norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
     "drv_sex1", "has_drv2", "is_drv2_male"]
 
 preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
-preproc_adapt_flux = ScoringEngineDemo.build_preproc_adapt_flux(norm_feats, targetname)
+adapter_flux = ScoringEngineDemo.build_adapter_flux(norm_feats, targetname)
 
-BSON.bson("assets/preproc-flux.bson", Dict(:preproc => preproc))
-BSON.bson("assets/preproc-adapt-flux.bson", Dict(:preproc_adapt => preproc_adapt_flux))
+# BSON.bson("assets/preproc-flux.bson", Dict(:preproc => preproc))
+# BSON.bson("assets/preproc-adapt-flux.bson", Dict(:preproc_adapt => preproc_adapt_flux))
 
 df_train = preproc(df_train)
 df_eval = preproc(df_eval)
 
-x_train, y_train = preproc_adapt_flux(df_train, true)
-x_eval, y_eval = preproc_adapt_flux(df_eval, true)
+x_train, y_train = adapter_flux(df_train, true)
+x_eval, y_eval = adapter_flux(df_eval, true)
 
-dtrain = Flux.Data.DataLoader((x_train, y_train), batchsize = 1024, shuffle = true)
-deval = Flux.Data.DataLoader((x_eval, y_eval), batchsize = 1024, shuffle = false)
+dtrain = Flux.Data.DataLoader((x_train |> gpu, y_train |> gpu), batchsize = 1024, shuffle = true)
+deval = Flux.Data.DataLoader((x_eval |> gpu, y_eval |> gpu), batchsize = 1024, shuffle = false)
 
 m = Chain(
     Dense(size(x_train, 1), 128, relu),
@@ -77,11 +79,15 @@ function train_loop!(m, θ, opt, loss; dtrain, deval = nothing)
     println(metric)
 end
 
+m = m |> gpu
+# m, opt = BSON.load("assets/flux-test-gpu.bson")[:model], BSON.load("assets/flux-test-gpu.bson")[:opt]
 opt = ADAM(5e-4)
 θ = params(m)
 
-for i in 1:25
+for i in 1:8
     train_loop!(m, θ, opt, loss, dtrain = dtrain, deval = deval)
 end
 
-BSON.bson("assets/model-flux.bson", Dict(:model => m))
+# BSON.bson("assets/model-flux.bson", Dict(:model => m))
+# BSON.bson("assets/flux-test-gpu.bson", Dict(:model => m, :opt => opt))
+# BSON.bson("assets/flux-test-cpu.bson", Dict(:model => m |> cpu, :opt => opt |> cpu))

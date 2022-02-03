@@ -541,6 +541,12 @@ git-tree-sha1 = "ee26b350276c51697c9c2d88a072b339f9f03d73"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.5"
 
+[[ParameterSchedulers]]
+deps = ["Flux"]
+git-tree-sha1 = "2455e1052e8a95783ef8556b27bd9089c38cb953"
+uuid = "d7d3b36b-41b8-4d0d-a2bf-768c6151755e"
+version = "0.2.1"
+
 [[Parsers]]
 deps = ["Dates"]
 git-tree-sha1 = "bfd7d8c7fd87f04543810d9cbd3995972236ba1b"
