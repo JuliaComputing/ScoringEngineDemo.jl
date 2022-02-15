@@ -30,7 +30,7 @@ end
 
 function score_flux(req::HTTP.Request)
     df = JSON3.read(IOBuffer(HTTP.payload(req))) |> jsontable |> DataFrame
-    score = df |> preproc_flux |> adapter_flux |> model_flux |> ScoringEngineDemo.logit
+    score = df |> preproc_flux |> adapter_flux |> model_flux |> logit
     res = Dict(:score => score)
     return HTTP.Response(200, JSON3.write(res))
 end
@@ -50,4 +50,5 @@ HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/flux", score_flux)
 HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/gbt", score_gbt)
 
 @info "Ready ▷"
-HTTP.serve(SCORING_ROUTER, ip"0.0.0.0", 8008)
+# HTTP.serve(SCORING_ROUTER, ip"0.0.0.0", 8008)
+HTTP.serve(SCORING_ROUTER, ip"127.0.0.1", 8008)
