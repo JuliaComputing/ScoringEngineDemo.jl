@@ -1,17 +1,19 @@
 # End-to-End machine-learning workflow on JuliaHub
 
-> In this webinar, we’ll present how a complete machine-learning can be built using Julia on JuliaHub. Key steps from data ingestion to deployment as a web service will be covered, including preprocessing and hyper-parameter search. A special accent will be made on building a reproducible process and taking advantage of distributed computing to accelerate model discovery. 
+> Welcome to this webinar covering an end-to-end machine learning workflow. Today, we’ll cover how a complete machine-learning can be built using Julia. We'll leverage JuliaHub, yet all the code is compatible to run locally on a regular laptop. Key steps from data ingestion to deployment as a web service will be covered, including preprocessing and hyper-parameter search. We will pay special attention on building a reproducible process and taking advantage of distributed computing to accelerate model discovery. 
 
 ## Intro
 
 The problem we'll tackle today come from Insurance Pricing Challenge hosted by AI Crowd. 
-For today's task, we'll develop a model to assess the probability for an insurer to make a claim during the next year.
+For today's task, we'll develop a model to assess the probability that an insured file a claim during the next year.
 
 This takes the form of a the very common binary regression problem. It is similar to scenarios where one wants to assess an applicant's credit risk, or the probability to convert a prospect into a sale or renew a contract. 
 
 All the code is available as a Julia project on JuliaComputing's GitHub.
 
 In the upcoming steps, we'll look to bring this project to deployment, hosting web api serving our model predictions, both for a simple neural network and a gradient boosted trees.
+
+Let's go ahead and start with the data ingestion.
 
 ## Data Loading
 
@@ -29,6 +31,9 @@ A critical step priori to jumping into modeling is to get the data cleaned and f
 This would typically be done hand on hand with a data exploratory analysis, or EDA. 
 
 Data visualisation can be handy at this stage. We'll keep this topic for an upcoming session where we'll 
+
+
+## Model  Training
 
 ### Extract hyper-search distributed results
 
