@@ -27,5 +27,10 @@ df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
 preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
 adapter = ScoringEngineDemo.build_adapter_gbt(norm_feats, targetname)
 
+df_train_pre = preproc(df_train)
+
+density(collect(skipmissing(df_train_pre.vh_age)))
+density(collect(skipmissing(df_train_pre.drv_age1)))
+
 BSON.bson("assets/preproc-gbt.bson", Dict(:preproc => preproc))
 BSON.bson("assets/adapter-gbt.bson", Dict(:adapter => adapter))

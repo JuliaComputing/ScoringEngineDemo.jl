@@ -6,8 +6,6 @@ using DataFrames
 using Random
 
 using Distributed
-
-
 @everywhere using Statistics: mean
 @everywhere using Flux
 @everywhere using Flux: update!
