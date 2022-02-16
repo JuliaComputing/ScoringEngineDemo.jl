@@ -1,4 +1,4 @@
-using ScoringEngineDemo
+# using ScoringEngineDemo
 using HTTP
 using JSON3
 using JSONTables
@@ -14,9 +14,9 @@ req = HTTP.request("GET", "http://localhost:8008")
 req_flux = HTTP.request("POST", "http://localhost:8008/api/v1/flux", [], body)
 req_gbt = HTTP.request("POST", "http://localhost:8008/api/v1/gbt", [], body)
 
-req = HTTP.request("GET", "https://6lkz9.apps.staging.juliacomputing.io/")
-req = HTTP.request("POST", "https://6lkz9.apps.staging.juliacomputing.io/api/v1/flux", [], body)
-req = HTTP.request("POST", "https://6lkz9.apps.staging.juliacomputing.io/api/v1/gbt", [], body)
+req = HTTP.request("GET", "https://eszmu.apps.staging.juliacomputing.io/")
+req = HTTP.request("POST", "https://eszmu.apps.staging.juliacomputing.io/api/v1/flux", [], body)
+req = HTTP.request("POST", "https://eszmu.apps.staging.juliacomputing.io/api/v1/gbt", [], body)
 
 scores_flux = Float64.(JSON3.read(req_flux.body, Dict)["score"])
 scores_gbt = Float64.(JSON3.read(req_gbt.body, Dict)["score"])

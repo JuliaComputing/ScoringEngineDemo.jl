@@ -18,7 +18,7 @@ end
 Preproc
 Preproc functor. Holds a vector of transform operations
 """
-struct Preproc
+struct Preproc <: Function
     layers::Vector
 end
 
@@ -67,9 +67,9 @@ Normalizer
 Constructor store normalisation parameters based on input vector mean and std. 
 Functor apply normalisation parameters to input vector
 """
-struct Normalizer <: Function
-    μ
-    σ
+struct Normalizer{T} <: Function
+    μ::T
+    σ::T
 end
 
 Normalizer(x::AbstractVector) = Normalizer(mean(skipmissing(x)), std(skipmissing(x)))
