@@ -26,8 +26,16 @@ norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
 Random.seed!(123)
 df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
 
+density(collect(skipmissing(df_train.vh_age)))
+density(collect(skipmissing(df_train.drv_age1)))
+
 preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
 adapter = ScoringEngineDemo.build_adapter_flux(norm_feats, targetname)
+
+df_train_pre = preproc(df_train)
+
+density(collect(skipmissing(df_train_pre.vh_age)))
+density(collect(skipmissing(df_train_pre.drv_age1)))
 
 BSON.bson("assets/preproc-flux.bson", Dict(:preproc => preproc))
 BSON.bson("assets/adapter-flux.bson", Dict(:adapter => adapter))

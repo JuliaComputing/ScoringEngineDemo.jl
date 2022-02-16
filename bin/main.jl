@@ -50,5 +50,5 @@ HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/flux", score_flux)
 HTTP.@register(SCORING_ROUTER, "POST", "/api/v1/gbt", score_gbt)
 
 @info "Ready ▷"
-HTTP.serve(SCORING_ROUTER, ip"0.0.0.0", 8008)
-# HTTP.serve(SCORING_ROUTER, ip"127.0.0.1", 8008)
+# HTTP.serve(SCORING_ROUTER, ip"0.0.0.0", 8008)
+HTTP.serve(SCORING_ROUTER, ip"127.0.0.1", 8008)

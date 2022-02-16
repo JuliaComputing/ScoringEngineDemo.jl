@@ -6,22 +6,22 @@ using DataFrames
 using CairoMakie
 
 df_tot = ScoringEngineDemo.load_data(joinpath(pkgdir(ScoringEngineDemo), "assets", "training_data.csv"))
-df = df_tot[1:2, :]
-body = JSON3.write(arraytable(df))
-JSON3.read(body) |> jsontable |> DataFrame
+df = df_tot[1:100, :]
+body = JSON3.write(arraytable(df));
+# JSON3.read(body) |> jsontable |> DataFrame
 
 req = HTTP.request("GET", "http://localhost:8008")
-req = HTTP.request("POST", "http://localhost:8008/api/v1/flux", [], body)
-req = HTTP.request("POST", "http://localhost:8008/api/v1/gbt", [], body)
+req_flux = HTTP.request("POST", "http://localhost:8008/api/v1/flux", [], body)
+req_gbt = HTTP.request("POST", "http://localhost:8008/api/v1/gbt", [], body)
 
 req = HTTP.request("GET", "https://6lkz9.apps.staging.juliacomputing.io/")
 req = HTTP.request("POST", "https://6lkz9.apps.staging.juliacomputing.io/api/v1/flux", [], body)
 req = HTTP.request("POST", "https://6lkz9.apps.staging.juliacomputing.io/api/v1/gbt", [], body)
 
-scores_flux = Float64.(JSON3.read(req.body, Dict)["score_flux"])
-scores_gbt = Float64.(JSON3.read(req.body, Dict)["score_gbt"])
+scores_flux = Float64.(JSON3.read(req_flux.body, Dict)["score"])
+scores_gbt = Float64.(JSON3.read(req_gbt.body, Dict)["score"])
 
-scatter(Float32.(scores_flux))
+scatter(scores_flux, scores_gbt)
 
 init = [0.0]
 p_node = Node(init) 
