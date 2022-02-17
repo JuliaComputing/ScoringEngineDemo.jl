@@ -14,6 +14,12 @@ global targetname = "event"
 
 df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
 
+
+# minimal DF verbs
+dfg = groupby(df_tot, "pol_coverage")
+df = combine(dfg, [:vh_age, :vh_value] .=>  mean ∘ skipmissing .=> [:vh_age, :vh_value])
+select(df, ["pol_coverage", "vh_value"])
+
 # set target
 transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
 
