@@ -16,6 +16,8 @@ using Random
 using ShapML
 using Loess
 
+using Weave
+
 using StatsBase: sample
 using Statistics: mean, std
 
@@ -30,6 +32,11 @@ const df_tot = begin
 end
 
 const sample_size = 20
+
+const j_blue = "#4063D8"
+const j_green = "#389826"
+const j_purple = "#9558B2"
+const j_red = "#CB3C33"
 
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
@@ -135,21 +142,22 @@ rng = Random.MersenneTwister(123)
 
     # plot_layout and config: Plotly specific 
     plot_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
-    plot_layout::PlotLayout = PlotLayout()
+    plot_layout::R{PlotLayout} = PlotLayout()
     plot_config::R{PlotConfig} = PlotConfig(displaylogo = false)
 
     # plot_layout and config: Plotly specific
     hist_flux_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
-    hist_flux_layout::PlotLayout = PlotLayout()
+    hist_flux_layout::R{PlotLayout} = PlotLayout()
     hist_flux_config::R{PlotConfig} = PlotConfig(displaylogo = false)
 
     # plot_layout and config: Plotly specific
-    hist_gbt::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
-    hist_gbt_layout::PlotLayout = PlotLayout()
+    hist_gbt_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
+    hist_gbt_layout::R{PlotLayout} = PlotLayout()
     hist_gbt_config::R{PlotConfig} = PlotConfig(displaylogo = false)
 
     features::R{Vector{String}} = features_effect #iris dataset have following columns: https://www.kaggle.com/lalitharajesh/iris-dataset-exploratory-data-analysis/data
     feature::R{String} = "vh_value"
+    weave::R{Bool} = false
     # yfeature::R{String} = iris_features[2]
 end
 
@@ -176,28 +184,77 @@ function plot_data!(df, model::Model)
 
     # push!(plot_data, PlotData(x = rand(10), y = rand(10), plot = "scatter", mode = "markers", marker = PlotDataMarker(color = "red"), name = "test"))
 
+    # SHAP one-way effect
     push!(plot_data, PlotData(x = shap_flux[:df][:, :feature_value], y = shap_flux[:df][:, :shap_effect],
         plot = "scatter", mode = "markers",
-        marker = PlotDataMarker(color = "red", opacity = 0.4, size = 10),
+        marker = PlotDataMarker(color = j_green, opacity = 0.4, size = 10),
         name = "flux"))
 
     push!(plot_data, PlotData(x = collect(shap_flux[:smooth_x]), y = collect(shap_flux[:smooth_y]),
         plot = "scatter", mode = "lines",
-        marker = PlotDataMarker(color = "red", opacity = 0.6, size = 10),
+        marker = PlotDataMarker(color = j_green, opacity = 0.6, size = 10),
         name = "flux"))
 
     push!(plot_data, PlotData(x = shap_gbt[:df][:, :feature_value], y = shap_gbt[:df][:, :shap_effect],
         plot = "scatter", mode = "markers",
-        marker = PlotDataMarker(color = "green", opacity = 0.4, size = 10),
+        marker = PlotDataMarker(color = j_purple, opacity = 0.4, size = 10),
         name = "gbt"))
 
     push!(plot_data, PlotData(x = collect(shap_gbt[:smooth_x]), y = collect(shap_gbt[:smooth_y]),
         plot = "scatter", mode = "lines",
-        marker = PlotDataMarker(color = "green", opacity = 0.6, size = 10),
+        marker = PlotDataMarker(color = j_purple, opacity = 0.6, size = 10),
         name = "gbt"))
 
     model.plot_data[] = plot_data
+
+    # feature importance
+    hist_flux_data = PlotData[]
+    push!(hist_flux_data, PlotData(y = feat_flux[:, :feature_name], x = feat_flux[:, :shap_effect],
+        plot = "bar", orientation = "h",
+        marker = PlotDataMarker(color = j_green, opacity = 0.5)))
+
+    model.hist_flux_data[] = hist_flux_data
+
+    model.hist_flux_layout[] = PlotLayout(
+        title = PlotLayoutTitle(text = "Flux feature importance"),
+        height = "auto")
+
+    # feature importance
+    hist_gbt_data = PlotData[]
+    push!(hist_gbt_data, PlotData(y = feat_gbt[:, :feature_name], x = feat_gbt[:, :shap_effect],
+        plot = "bar", orientation = "h",
+        marker = PlotDataMarker(color = j_purple, opacity = 0.5)))
+
+    model.hist_gbt_data[] = hist_gbt_data
+
+    model.hist_gbt_layout[] = PlotLayout(
+        title = PlotLayoutTitle(text = "GBT feature importance"),
+        height = "auto")
+
     return nothing
+end
+
+function prepare_report(df, model::Model)
+    isempty(model.feature[]) && return nothing
+    ids = sample(1:nrow(df), sample_size, replace = false, ordered = true)
+    df_sample = df[ids, :]
+    @info "df size" size(df_sample)
+    add_scores!(df_sample)
+    data_flux = run_shap_flux(df_sample, "flux")
+    feat_flux = get_feat_importance(data_flux)
+    shap_flux = plot_shap(data_flux, model.feature[])
+
+    data_gbt = run_shap_gbt(df_sample, "gbt")
+    feat_gbt = get_feat_importance(data_gbt)
+    shap_gbt = plot_shap(data_gbt, model.feature[])
+
+    data = Dict(
+        :shap_flux => shap_flux,
+        :shap_gbt => shap_gbt,
+        :feat_flux => feat_flux,
+        :feat_gbt => feat_gbt)
+
+    return data
 end
 
 
@@ -206,6 +263,19 @@ function ui(model::Model)
     onany(model.feature, model.features) do (_...)
         plot_data!(df_tot, model)
         #   compute_clusters!(model)
+    end
+
+    on(model.weave) do _
+        if (model.weave[])
+            data = prepare_report(df_tot, model)
+            weave("report.jmd",
+                doctype = "pandoc2html",
+                pandoc_options = ["--toc", "--toc-depth= 3", "--self-contained"],
+                out_path = @__DIR__,
+                fig_path = joinpath(@__DIR__, "fig"),
+                args = data)
+            model.weave[] = false
+        end
     end
 
     page(
@@ -225,6 +295,8 @@ function ui(model::Model)
               background-color: #FFF;
               border-radius: 2px;
               box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.04);
+              padding: 0px 0px 0px 0px;
+              margin: 0px 0px 0px 0px;
             }
             .stipple-core .st-module > h5,
             .stipple-core .st-module > h6 {
@@ -239,9 +311,17 @@ function ui(model::Model)
                     class = "st-module col-sm-3",
                     [
                         h6("Feature"),
-                        Stipple.select(:feature; options = :features)
+                        Stipple.select(:feature; options = :features),
+                        br(),
+                        btn("Report", @click("weave = true"), color = "secondary"),
                     ]
                 )
+                # cell(
+                #     class = "st-module col-sm-3",
+                #     [
+                #         btn("Report", @click("weave = true"), color = "secondary"),
+                #     ]
+                # ),
             ]),
             row([
                 cell(
@@ -251,6 +331,16 @@ function ui(model::Model)
                         plot(:plot_data, layout = :plot_layout, config = :plot_config)
                     ]
                 )
+            ]),
+            row([
+                cell(class = "st-module",
+                    [
+                        plot(:hist_flux_data, layout = :hist_flux_layout, config = :hist_flux_config)
+                    ]),
+                cell(class = "st-module",
+                    [
+                        plot(:hist_gbt_data, layout = :hist_gbt_layout, config = :hist_gbt_config)
+                    ])
             ])
         ]
     )
@@ -262,4 +352,4 @@ route("/") do
 end
 
 up(9000; async = true, server = Stipple.bootstrap())
-down()
+# down()

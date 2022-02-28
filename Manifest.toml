@@ -541,6 +541,12 @@ git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
 
+[[Highlights]]
+deps = ["DocStringExtensions", "InteractiveUtils", "REPL"]
+git-tree-sha1 = "f823a2d04fb233d52812c8024a6d46d9581904a4"
+uuid = "eafb193a-b7ab-5a9e-9068-77385905fa72"
+version = "0.4.5"
+
 [[HttpCommon]]
 deps = ["Dates", "Nullables", "Test", "URIParser"]
 git-tree-sha1 = "46313284237aa6ca67a6bce6d6fbd323d19cff59"
@@ -931,6 +937,12 @@ version = "0.3.3"
 
 [[MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
+
+[[Mustache]]
+deps = ["Printf", "Tables"]
+git-tree-sha1 = "bfbd6fb946d967794498790aa7a0e6cdf1120f41"
+uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
+version = "1.0.13"
 
 [[NNlib]]
 deps = ["Adapt", "ChainRulesCore", "Compat", "LinearAlgebra", "Pkg", "Requires", "Statistics"]
@@ -1509,6 +1521,12 @@ deps = ["Dates", "JSON3", "Logging", "Pkg", "Random", "Scratch", "UrlDownload"]
 git-tree-sha1 = "89ef2431dd59344ebaf052d0737205854ded0c62"
 uuid = "a637dc6b-bca1-447e-a4fa-35264c9d0580"
 version = "0.2.0"
+
+[[Weave]]
+deps = ["Base64", "Dates", "Highlights", "JSON", "Markdown", "Mustache", "Pkg", "Printf", "REPL", "RelocatableFolders", "Requires", "Serialization", "YAML"]
+git-tree-sha1 = "d62575dcea5aeb2bfdfe3b382d145b65975b5265"
+uuid = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
+version = "0.10.10"
 
 [[WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]

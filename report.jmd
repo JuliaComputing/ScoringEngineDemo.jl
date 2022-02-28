@@ -1,0 +1,83 @@
+---
+title: Model Explaination
+author: Julia Computing
+---
+
+```julia; echo=false; results="hidden"
+using PrettyTables
+using CairoMakie
+
+const j_blue = "#4063D8"
+const j_green = "#389826"
+const j_purple = "#9558B2"
+const j_red = "#CB3C33"
+
+const alpha = "80"
+const j_blue_a = "#4063D8" * alpha
+const j_green_a = "#389826" * alpha
+const j_purple_a = "#9558B2" * alpha
+const j_red_a = "#CB3C33" * alpha
+
+```
+
+```julia; echo = false
+shap_flux = WEAVE_ARGS[:shap_flux];
+shap_gbt = WEAVE_ARGS[:shap_gbt];
+feat_flux = WEAVE_ARGS[:feat_flux];
+feat_gbt = WEAVE_ARGS[:feat_gbt];
+```
+
+## SHAP one-way effects
+
+```julia; echo=false
+fig = Figure()
+f1 = fig[1,1]
+f2 = fig[2,1]
+ax1 = Axis(f1, xlabel = "feature value", ylabel = "SHAP effect")
+
+scatter!(f1, shap_flux[:df][:, :feature_value], shap_flux[:df][:, :shap_effect], color = j_green_a, label = "flux")
+scatter!(f1, shap_gbt[:df][:, :feature_value], shap_gbt[:df][:, :shap_effect], color = j_purple_a, label = "GBT")
+
+lines!(f1, shap_flux[:smooth_x], shap_flux[:smooth_y], color = j_green)
+lines!(f1, shap_gbt[:smooth_x], shap_gbt[:smooth_y], color = j_purple)
+
+Legend(f2, ax1, orientation = :horizontal)
+current_figure()
+```
+
+## Feature importance
+
+### Flux
+
+```julia; echo=false
+fig = Figure()
+f1 = fig[1,1]
+axis_labels_num = 1:length(feat_flux[:, :feature_name])
+axis_labels_txt = feat_flux[:, :feature_name]
+ax1 = Axis(f1, title = "Feature importance", ylabel = "SHAP effect", 
+    yticks = (axis_labels_num, axis_labels_txt))
+barplot!(f1, axis_labels_num, feat_flux[:, :shap_effect], color = j_green_a, direction=:x)
+current_figure()
+```
+
+```julia; echo = false
+feat_flux;
+pretty_table(feat_flux)
+```
+
+### GBT
+
+```julia; echo=false
+fig = Figure()
+f1 = fig[1,1]
+axis_labels_num = 1:length(feat_gbt[:, :feature_name])
+axis_labels_txt = feat_gbt[:, :feature_name]
+ax1 = Axis(f1, title = "Feature importance", ylabel = "SHAP effect", 
+    yticks = (axis_labels_num, axis_labels_txt))
+barplot!(f1, axis_labels_num, feat_gbt[:, :shap_effect], color = j_purple_a, direction=:x)
+current_figure()
+```
+
+```julia; echo = false
+pretty_table(feat_gbt)
+```
