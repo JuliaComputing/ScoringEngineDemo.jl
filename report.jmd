@@ -7,6 +7,8 @@ author: Julia Computing
 using PrettyTables
 using CairoMakie
 
+using Latexify
+
 const j_blue = "#4063D8"
 const j_green = "#389826"
 const j_purple = "#9558B2"
@@ -78,6 +80,14 @@ barplot!(f1, axis_labels_num, feat_gbt[:, :shap_effect], color = j_purple_a, dir
 current_figure()
 ```
 
+pretty_table
+
 ```julia; echo = false
 pretty_table(feat_gbt)
+```
+
+latexify
+
+```julia; echo = false
+latexify(feat_gbt)
 ```

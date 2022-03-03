@@ -24,13 +24,6 @@ using Statistics: mean, std
 @info "Initializing assets"
 @info "pkgdir(ScoringEngineDemo): " pkgdir(ScoringEngineDemo)
 
-# const df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
-
-const df_tot = begin
-    df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
-    dropmissing!(df_tot)
-end
-
 const sample_size = 20
 
 const j_blue = "#4063D8"
@@ -39,6 +32,13 @@ const j_purple = "#9558B2"
 const j_red = "#CB3C33"
 
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
+
+# const df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
+const df_tot = begin
+    df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
+    dropmissing!(df_tot)
+end
+
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
 const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
 
