@@ -356,6 +356,7 @@ route("/") do
 end
 
 # up(9000; async = false, server = Stipple.bootstrap())
-up(9000; async = false)
+# up(9000; async = false)
+Stipple.Genie.startup(8000, "0.0.0.0", async = false)
 
 # down()
