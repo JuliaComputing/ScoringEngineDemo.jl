@@ -355,5 +355,7 @@ route("/") do
     Model |> init |> ui |> html
 end
 
-up(9000; async = false, server = Stipple.bootstrap())
+# up(9000; async = false, server = Stipple.bootstrap())
+up(9000; async = false)
+
 # down()
