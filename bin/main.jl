@@ -264,9 +264,8 @@ end
 
 function ui(model::Model)
 
-    onany(model.feature, model.features) do (_...)
+    onany(model.feature, model.features, model.isready) do (_...)
         plot_data!(df_tot, model)
-        #   compute_clusters!(model)
     end
 
     on(model.weave) do _
@@ -346,7 +345,8 @@ function ui(model::Model)
                         plot(:hist_gbt_data, layout = :hist_gbt_layout, config = :hist_gbt_config)
                     ])
             ])
-        ]
+        ],
+        @iif(:isready)
     )
 end
 
