@@ -1,6 +1,10 @@
 @info "@__DIR__: " @__DIR__
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
+ENV["STARTSERVER"] = true
+ENV["GENIE_ENV"] = "prod"
+ENV["EARLYBIND"] = true
+
 @info "Initializing packages"
 using ScoringEngineDemo
 using BSON
