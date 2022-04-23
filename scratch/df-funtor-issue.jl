@@ -47,18 +47,19 @@ transform(df, feat_names .=> norms_f .=> feat_names)
 # multi-function pattern
 using DataFrames
 using BenchmarkTools
-nrows = 10_000_000
-df = DataFrame(id = rand(["A"], nrows), v1 = rand(nrows), v2 = rand(nrows), v3 = rand(nrows), v4 = rand(nrows))
+nrows = 1_000_000
+df = DataFrame(id=rand(["A"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
+df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H" ,"I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
 
-fun1(x) = x^2
-fun2(x) = sin(x)
-fun3(x) = cos(x)
-fun4(x) = exp(x)
+# fun1(x) = exp(x)
+# fun2(x) = exp(x)
+# fun3(x) = exp(x)
+# fun4(x) = exp(x)
 
-f1  = "v1" => ByRow(fun1) => "new1"
-f2 = "v2" => ByRow(fun2) => "new2"
-f3 = "v2" => ByRow(fun3) => "new3"
-f4 = "v2" => ByRow(fun4) => "new4"
+f1 = "v1" => ByRow(exp) => "new1"
+f2 = "v2" => ByRow(exp) => "new2"
+f3 = "v2" => ByRow(exp) => "new3"
+f4 = "v2" => ByRow(exp) => "new4"
 
 funs = [f1, f2, f3, f4]
 
@@ -73,9 +74,10 @@ function df_trans_B(df, funs)
     transform!(df, funs)
 end
 
+# 19.500 ms (644 allocations: 30.55 MiB)
 @btime df_trans_A($df, $funs);
+# 19.325 ms (410 allocations: 30.54 MiB)
 @btime df_trans_B($df, $funs);
-
 
 gdf = groupby(df, "id")
 function gdf_trans_A(gdf, funs)
@@ -92,5 +94,75 @@ end
 @time gdf_trans_A(gdf, funs);
 @time gdf_trans_B(gdf, funs);
 
+# Single group
+# 56.028 ms (2963 allocations: 152.76 MiB)
 @btime gdf_trans_A($gdf, $funs);
+# 19.652 ms (1124 allocations: 129.76 MiB)
 @btime gdf_trans_B($gdf, $funs);
+
+# 10 groups
+# 114.379 ms (3284 allocations: 195.40 MiB)
+@btime gdf_trans_A($gdf, $funs);
+# 49.737 ms (1444 allocations: 172.41 MiB)
+@btime gdf_trans_B($gdf, $funs);
+
+
+
+using DataFrames
+using BenchmarkTools
+nrows = 1_000_000
+df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H" ,"I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
+df = DataFrame(id=rand(["A"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
+
+f1 = "v1" => sum => "new1"
+f2 = "v2" => sum => "new2"
+f3 = "v2" => sum => "new3"
+f4 = "v2" => sum => "new4"
+
+funs = [f1, f2, f3, f4]
+
+function df_trans_A(df, funs)
+    dfg = groupby(df, :id)
+    agg = combine(dfg, funs[1])
+    agg = combine(dfg, funs[2])
+    agg = combine(dfg, funs[3])
+    agg = combine(dfg, funs[4])
+end
+
+function df_trans_B(df, funs)
+    dfg = groupby(df, :id)
+    agg = combine(dfg, funs)
+end
+
+# 1 Group
+# 26.565 ms (1067 allocations: 31.33 MiB)
+@btime df_trans_A($df, $funs);
+# 17.194 ms (546 allocations: 31.29 MiB)
+@btime df_trans_B($df, $funs);
+
+# 10 Groups
+# 18.536 ms (1068 allocations: 31.33 MiB)
+@btime df_trans_A($df, $funs);
+# 15.977 ms (546 allocations: 31.29 MiB)
+@btime df_trans_B($df, $funs);
+
+function df_trans_A(df, funs)
+    agg = combine(df, funs[1])
+    agg = combine(df, funs[2])
+    agg = combine(df, funs[3])
+    agg = combine(df, funs[4])
+end
+
+function df_trans_B(df, funs)
+    agg = combine(df, funs)
+end
+
+# 1.664 ms (444 allocations: 28.44 KiB)
+@btime df_trans_A($df, $funs);
+# 1.640 ms (382 allocations: 21.69 KiB)
+@btime df_trans_B($df, $funs);
+
+# 1.665 ms (444 allocations: 28.44 KiB)
+@btime df_trans_A($df, $funs);
+# 1.631 ms (382 allocations: 21.69 KiB)
+@btime df_trans_B($df, $funs);
