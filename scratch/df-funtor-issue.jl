@@ -47,9 +47,11 @@ transform(df, feat_names .=> norms_f .=> feat_names)
 # multi-function pattern
 using DataFrames
 using BenchmarkTools
+using Base.Threads: SpinLock, @threads, @spawn 
+
 nrows = 1_000_000
 df = DataFrame(id=rand(["A"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
-df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H" ,"I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
+df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
 
 # fun1(x) = exp(x)
 # fun2(x) = exp(x)
@@ -58,8 +60,8 @@ df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H" ,"I", "J"], nrows
 
 f1 = "v1" => ByRow(exp) => "new1"
 f2 = "v2" => ByRow(exp) => "new2"
-f3 = "v2" => ByRow(exp) => "new3"
-f4 = "v2" => ByRow(exp) => "new4"
+f3 = "v3" => ByRow(exp) => "new3"
+f4 = "v4" => ByRow(exp) => "new4"
 
 funs = [f1, f2, f3, f4]
 
@@ -74,10 +76,51 @@ function df_trans_B(df, funs)
     transform!(df, funs)
 end
 
+function df_trans_C(df, funs)
+    @threads for fun in funs
+        transform!(df, fun)
+    end
+    return df
+end
+
+function df_trans_D(df, funs)
+    ts = Dict{Int,Task}()
+    @sync for i in 1:length(funs)
+        ts[i] = @spawn transform!(df, funs[i])
+    end
+    @sync for i in 1:length(funs)
+        @async wait(ts[i])
+    end
+    return nothing
+end
+
+function df_trans_E(df, funs)
+    sl = SpinLock()
+    @threads for fun in funs
+        incol = fun[1]
+        outcol = fun[2][2]
+        f = fun[2][1]
+        src = df[!, incol]
+        dst = f(src)
+        lock(sl)
+        df[!, outcol] = dst
+        unlock(sl)
+    end
+end
+
+@time df_trans_B(df, funs);
+@time df_trans_C(df, funs);
+@time df_trans_D(df, funs);
+@time df_trans_E(df, funs);
+
 # 19.500 ms (644 allocations: 30.55 MiB)
 @btime df_trans_A($df, $funs);
 # 19.325 ms (410 allocations: 30.54 MiB)
 @btime df_trans_B($df, $funs);
+@btime df_trans_C($df, $funs);
+@btime df_trans_D($df, $funs);
+@btime df_trans_E($df, $funs);
+
 
 gdf = groupby(df, "id")
 function gdf_trans_A(gdf, funs)
@@ -111,13 +154,13 @@ end
 using DataFrames
 using BenchmarkTools
 nrows = 1_000_000
-df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H" ,"I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
+df = DataFrame(id=rand(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
 df = DataFrame(id=rand(["A"], nrows), v1=rand(nrows), v2=rand(nrows), v3=rand(nrows), v4=rand(nrows))
 
 f1 = "v1" => sum => "new1"
 f2 = "v2" => sum => "new2"
-f3 = "v2" => sum => "new3"
-f4 = "v2" => sum => "new4"
+f3 = "v3" => sum => "new3"
+f4 = "v4" => sum => "new4"
 
 funs = [f1, f2, f3, f4]
 
