@@ -11,7 +11,7 @@ using Distributed
 @everywhere using Flux: update!
 
 results_path = joinpath(@__DIR__, "results")
-mkdir(results_path)
+isdir(results_path) || mkdir(results_path)
 ENV["RESULTS_FILE"] = results_path
 
 @info "nworkers" nworkers()
