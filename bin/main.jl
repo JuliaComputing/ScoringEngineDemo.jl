@@ -1,3 +1,4 @@
+@info "Julia version: " VERSION
 @info "@__DIR__: " @__DIR__
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
