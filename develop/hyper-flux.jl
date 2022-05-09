@@ -8,7 +8,7 @@ using Random
 using Distributed
 @everywhere using Statistics: mean
 @everywhere using Flux
-@everywhere using Flux: update!
+@everywhere using Flux: params, update!
 
 results_path = joinpath(@__DIR__, "results")
 isdir(results_path) || mkdir(results_path)
