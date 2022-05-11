@@ -16,6 +16,8 @@ using DataFrames
 using Stipple
 using StippleUI
 using StipplePlotly
+using StipplePlotly: PlotLayout
+using PlotlyBase
 using Random
 
 using ShapML
@@ -39,7 +41,7 @@ const j_red = "#CB3C33"
 const assets_path = joinpath(pkgdir(ScoringEngineDemo), "assets")
 
 # const df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
-const df_tot = begin
+df_tot = begin
     df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
     dropmissing!(df_tot)
 end
@@ -83,54 +85,54 @@ end
 
 function pred_shap_flux(model, df)
     scores = infer_flux(df::DataFrame)
-    pred_df = DataFrame(score = scores)
+    pred_df = DataFrame(score=scores)
     return pred_df
 end
 
 function pred_shap_gbt(model, df)
     scores = infer_gbt(df::DataFrame)
-    pred_df = DataFrame(score = scores)
+    pred_df = DataFrame(score=scores)
     return pred_df
 end
 
 # model argment = infer_flux / infer_gbt
-function run_shap_flux(df, model = "flux")
+function run_shap_flux(df, model="flux")
     data_shap = ShapML.shap(
-        explain = copy(df),
-        reference = copy(df),
-        target_features = features_importance,
-        model = "flux",
-        predict_function = pred_shap_flux,
-        sample_size = sample_size,
-        seed = 123)
+        explain=copy(df),
+        reference=copy(df),
+        target_features=features_importance,
+        model="flux",
+        predict_function=pred_shap_flux,
+        sample_size=sample_size,
+        seed=123)
     return data_shap
 end
 
-function run_shap_gbt(df, model = "gbt")
+function run_shap_gbt(df, model="gbt")
     data_shap = ShapML.shap(
-        explain = copy(df),
-        reference = copy(df),
-        target_features = features_importance,
-        model = "gbt",
-        predict_function = pred_shap_gbt,
-        sample_size = sample_size,
-        seed = 123)
+        explain=copy(df),
+        reference=copy(df),
+        target_features=features_importance,
+        model="gbt",
+        predict_function=pred_shap_gbt,
+        sample_size=sample_size,
+        seed=123)
     return data_shap
 end
 
-function plot_shap(data_shap, feat = "vh_age")
+function plot_shap(data_shap, feat="vh_age")
     df = data_shap[data_shap.feature_name.==feat, :]
     transform!(df, :feature_value => ByRow(x -> convert(Float64, x)) => :feature_value)
-    model = loess(df[:, :feature_value], df[:, :shap_effect], span = 1.0)
-    smooth_x = range(extrema(df[:, :feature_value])...; length = 10)
+    model = loess(df[:, :feature_value], df[:, :shap_effect], span=1.0)
+    smooth_x = range(extrema(df[:, :feature_value])...; length=10)
     smooth_y = Loess.predict(model, smooth_x)
-    return (df = df, smooth_x = smooth_x, smooth_y = smooth_y)
+    return (df=df, smooth_x=smooth_x, smooth_y=smooth_y)
 end
 
 function get_feat_importance(data_shap)
     dfg = groupby(data_shap, :feature_name)
     df = combine(dfg, :shap_effect => (x -> mean(abs.(x))) => :shap_effect)
-    sort!(df, :shap_effect, rev = false)
+    sort!(df, :shap_effect, rev=false)
     return df
 end
 
@@ -146,19 +148,27 @@ rng = Random.MersenneTwister(123)
     # data_pagination::DataTablePagination = DataTablePagination(rows_per_page = 50) # DataTable, DataTablePagination are part of StippleUI which helps us set Data Table UI
 
     # plot_layout and config: Plotly specific 
-    plot_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
+    plot_data::R{Vector{PlotData}} = PlotData[]
     plot_layout::R{PlotLayout} = PlotLayout()
-    plot_config::R{PlotConfig} = PlotConfig(displaylogo = false)
+    plot_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=true)
 
-    # plot_layout and config: Plotly specific
-    hist_flux_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
+    # Flux feature importance
+    hist_flux_data::R{Vector{PlotData}} = PlotData[]
     hist_flux_layout::R{PlotLayout} = PlotLayout()
-    hist_flux_config::R{PlotConfig} = PlotConfig(displaylogo = false)
+    hist_flux_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=false)
 
-    # plot_layout and config: Plotly specific
-    hist_gbt_data::R{Vector{PlotData}} = PlotData[]   # PlotSeries is structure used to store data
+    # GBT feature importance
+    hist_gbt_data::R{Vector{PlotData}} = PlotData[]
     hist_gbt_layout::R{PlotLayout} = PlotLayout()
-    hist_gbt_config::R{PlotConfig} = PlotConfig(displaylogo = false)
+    hist_gbt_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=false)
+
+    # PLotlyBase
+    plt_base_trace::R{Vector{GenericTrace}} = [PlotlyBase.scatter(
+        x=1:10,
+        y=(1:10).^(1/2),
+        mode="markers+lines")]
+    plt_base_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    plt_base_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig(displaylogo=true)
 
     features::R{Vector{String}} = features_effect #iris dataset have following columns: https://www.kaggle.com/lalitharajesh/iris-dataset-exploratory-data-analysis/data
     feature::R{String} = "vh_value"
@@ -171,7 +181,7 @@ function plot_data!(df, model::Model)
     plot_data = PlotData[]
     isempty(model.feature[]) && return nothing
 
-    ids = sample(1:nrow(df), sample_size, replace = false, ordered = true)
+    ids = sample(1:nrow(df), sample_size, replace=false, ordered=true)
     df_sample = df[ids, :]
     @info "df size" size(df_sample)
     add_scores!(df_sample)
@@ -190,58 +200,58 @@ function plot_data!(df, model::Model)
     # push!(plot_data, PlotData(x = rand(10), y = rand(10), plot = "scatter", mode = "markers", marker = PlotDataMarker(color = "red"), name = "test"))
 
     # SHAP one-way effect
-    push!(plot_data, PlotData(x = shap_flux[:df][:, :feature_value], y = shap_flux[:df][:, :shap_effect],
-        plot = "scatter", mode = "markers",
-        marker = PlotDataMarker(color = j_green, opacity = 0.4, size = 10),
-        name = "flux"))
+    push!(plot_data, PlotData(x=shap_flux[:df][:, :feature_value], y=shap_flux[:df][:, :shap_effect],
+        plot="scatter", mode="markers",
+        marker=PlotDataMarker(color=j_green, opacity=1.0, size=10),
+        name="flux"))
 
-    push!(plot_data, PlotData(x = collect(shap_flux[:smooth_x]), y = collect(shap_flux[:smooth_y]),
-        plot = "scatter", mode = "lines",
-        marker = PlotDataMarker(color = j_green, opacity = 0.6, size = 10),
-        name = "flux"))
+    push!(plot_data, PlotData(x=collect(shap_flux[:smooth_x]), y=collect(shap_flux[:smooth_y]),
+        plot="scatter", mode="lines",
+        marker=PlotDataMarker(color=j_green, opacity=1.0, size=10),
+        name="flux"))
 
-    push!(plot_data, PlotData(x = shap_gbt[:df][:, :feature_value], y = shap_gbt[:df][:, :shap_effect],
-        plot = "scatter", mode = "markers",
-        marker = PlotDataMarker(color = j_purple, opacity = 0.4, size = 10),
-        name = "gbt"))
+    push!(plot_data, PlotData(x=shap_gbt[:df][:, :feature_value], y=shap_gbt[:df][:, :shap_effect],
+        plot="scatter", mode="markers",
+        marker=PlotDataMarker(color=j_purple, opacity=1.0, size=10),
+        name="gbt"))
 
-    push!(plot_data, PlotData(x = collect(shap_gbt[:smooth_x]), y = collect(shap_gbt[:smooth_y]),
-        plot = "scatter", mode = "lines",
-        marker = PlotDataMarker(color = j_purple, opacity = 0.6, size = 10),
-        name = "gbt"))
+    push!(plot_data, PlotData(x=collect(shap_gbt[:smooth_x]), y=collect(shap_gbt[:smooth_y]),
+        plot="scatter", mode="lines",
+        marker=PlotDataMarker(color=j_purple, opacity=1.0, size=10),
+        name="gbt"))
 
     model.plot_data[] = plot_data
 
     # feature importance
     hist_flux_data = PlotData[]
-    push!(hist_flux_data, PlotData(y = feat_flux[:, :feature_name], x = feat_flux[:, :shap_effect],
-        plot = "bar", orientation = "h",
-        marker = PlotDataMarker(color = j_green, opacity = 0.5)))
+    push!(hist_flux_data, PlotData(y=feat_flux[:, :feature_name], x=feat_flux[:, :shap_effect],
+        plot="bar", orientation="h",
+        marker=PlotDataMarker(color=j_green, opacity=1.0)))
 
     model.hist_flux_data[] = hist_flux_data
 
     model.hist_flux_layout[] = PlotLayout(
-        title = PlotLayoutTitle(text = "Flux feature importance"),
-        height = "auto")
+        title=PlotLayoutTitle(text="Flux feature importance"),
+        height="auto")
 
     # feature importance
     hist_gbt_data = PlotData[]
-    push!(hist_gbt_data, PlotData(y = feat_gbt[:, :feature_name], x = feat_gbt[:, :shap_effect],
-        plot = "bar", orientation = "h",
-        marker = PlotDataMarker(color = j_purple, opacity = 0.5)))
+    push!(hist_gbt_data, PlotData(y=feat_gbt[:, :feature_name], x=feat_gbt[:, :shap_effect],
+        plot="bar", orientation="h",
+        marker=PlotDataMarker(color=j_purple, opacity=1.0)))
 
     model.hist_gbt_data[] = hist_gbt_data
 
     model.hist_gbt_layout[] = PlotLayout(
-        title = PlotLayoutTitle(text = "GBT feature importance"),
-        height = "auto")
+        title=PlotLayoutTitle(text="GBT feature importance"),
+        height="auto")
 
     return nothing
 end
 
 function prepare_report(df, model::Model)
     isempty(model.feature[]) && return nothing
-    ids = sample(1:nrow(df), sample_size, replace = false, ordered = true)
+    ids = sample(1:nrow(df), sample_size, replace=false, ordered=true)
     df_sample = df[ids, :]
     @info "df size" size(df_sample)
     add_scores!(df_sample)
@@ -273,21 +283,21 @@ function ui(model::Model)
         if (model.weave[])
             data = prepare_report(df_tot, model)
             weave("report.jmd",
-                doctype = "pandoc2html",
-                pandoc_options = ["--toc", "--toc-depth= 3", "--self-contained"],
-                out_path = @__DIR__,
-                fig_path = joinpath(@__DIR__, "fig"),
-                args = data)
+                doctype="pandoc2html",
+                pandoc_options=["--toc", "--toc-depth= 3", "--self-contained"],
+                out_path=@__DIR__,
+                fig_path=joinpath(@__DIR__, "fig"),
+                args=data)
             model.weave[] = false
         end
     end
 
     page(
         model,
-        class = "container",
-        title = "Model Diagnosis",
-        head_content = Genie.Assets.favicon_support(),
-        prepend = style(
+        class="container",
+        title="Model Diagnosis",
+        head_content=Genie.Assets.favicon_support(),
+        prepend=style(
             """
             tr:nth-child(even) {
               background: #F8F8F8 !important;
@@ -312,12 +322,12 @@ function ui(model::Model)
             heading("Model Diagnosis"),
             row([
                 cell(
-                    class = "st-module col-sm-3",
+                    class="st-module col-sm-3",
                     [
                         h6("Feature"),
-                        Stipple.select(:feature; options = :features),
+                        Stipple.select(:feature; options=:features),
                         br(),
-                        btn("Report", @click("weave = true"), color = "secondary"),
+                        btn("Report", @click("weave = true"), color="secondary"),
                     ]
                 )
                 # cell(
@@ -329,21 +339,27 @@ function ui(model::Model)
             ]),
             row([
                 cell(
-                    class = "st-module",
+                    class="st-module",
                     [
                         h5("One-way effect"),
-                        plot(:plot_data, layout = :plot_layout, config = :plot_config)
+                        plot(:plot_data, layout=:plot_layout, config=:plot_config)
                     ]
                 )
             ]),
             row([
-                cell(class = "st-module",
+                cell(class="st-module",
                     [
-                        plot(:hist_flux_data, layout = :hist_flux_layout, config = :hist_flux_config)
+                        plot(:hist_flux_data, layout=:hist_flux_layout, config=:hist_flux_config)
                     ]),
-                cell(class = "st-module",
+                cell(class="st-module",
                     [
-                        plot(:hist_gbt_data, layout = :hist_gbt_layout, config = :hist_gbt_config)
+                        plot(:hist_gbt_data, layout=:hist_gbt_layout, config=:hist_gbt_config)
+                    ])
+            ]),
+            row([
+                cell(class="st-module",
+                    [
+                        plot(:plt_base_trace, layout=:plt_base_layout, config=:plt_base_config)
                     ])
             ])
         ],
@@ -351,13 +367,9 @@ function ui(model::Model)
     )
 end
 
-
 route("/") do
     Model |> init |> ui |> html
 end
 
-# up(9000; async = false, server = Stipple.bootstrap())
-# up(9000; async = false)
-Stipple.Genie.startup(8000, "0.0.0.0", async = false)
-
+Stipple.Genie.startup(8000, "0.0.0.0", async=false)
 # down()
