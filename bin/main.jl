@@ -2,11 +2,12 @@
 @info "@__DIR__: " @__DIR__
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
-ENV["STARTSERVER"] = true
-ENV["GENIE_ENV"] = "prod"
-ENV["EARLYBIND"] = true
+# ENV["STARTSERVER"] = true
+ENV["GENIE_ENV"] = "dev"
+# ENV["EARLYBIND"] = true
 
 @info "Initializing packages"
+using Revise
 using ScoringEngineDemo
 using BSON
 using HTTP
@@ -83,6 +84,12 @@ function add_scores!(df::DataFrame)
     return nothing
 end
 
+const df_preds = begin
+    df_preds = copy(df_tot)
+    add_scores!(df_preds)
+    df_preds
+end
+
 function pred_shap_flux(model, df)
     scores = infer_flux(df::DataFrame)
     pred_df = DataFrame(score=scores)
@@ -145,33 +152,33 @@ rng = Random.MersenneTwister(123)
 
 @reactive mutable struct Model <: ReactiveModel
 
+    # features
+    features::R{Vector{String}} = features_effect #iris dataset have following columns: https://www.kaggle.com/lalitharajesh/iris-dataset-exploratory-data-analysis/data
+    feature::R{String} = "vh_value"
+
+    # One-way plots
+    groupmethod::R{String} = "quantiles"
+    plt_base_trace::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
+    plt_base_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    plt_base_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
+
     # data_pagination::DataTablePagination = DataTablePagination(rows_per_page = 50) # DataTable, DataTablePagination are part of StippleUI which helps us set Data Table UI
 
     # plot_layout and config: Plotly specific 
     plot_data::R{Vector{PlotData}} = PlotData[]
-    plot_layout::R{PlotLayout} = PlotLayout()
-    plot_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=true)
+    plot_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    plot_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
     # Flux feature importance
     hist_flux_data::R{Vector{PlotData}} = PlotData[]
     hist_flux_layout::R{PlotLayout} = PlotLayout()
-    hist_flux_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=false)
+    hist_flux_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig()
 
     # GBT feature importance
     hist_gbt_data::R{Vector{PlotData}} = PlotData[]
     hist_gbt_layout::R{PlotLayout} = PlotLayout()
-    hist_gbt_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig(displaylogo=false)
+    hist_gbt_config::R{StipplePlotly.PlotConfig} = StipplePlotly.PlotConfig()
 
-    # PLotlyBase
-    plt_base_trace::R{Vector{GenericTrace}} = [PlotlyBase.scatter(
-        x=1:10,
-        y=(1:10).^(1/2),
-        mode="markers+lines")]
-    plt_base_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
-    plt_base_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig(displaylogo=true)
-
-    features::R{Vector{String}} = features_effect #iris dataset have following columns: https://www.kaggle.com/lalitharajesh/iris-dataset-exploratory-data-analysis/data
-    feature::R{String} = "vh_value"
     weave::R{Bool} = false
     # yfeature::R{String} = iris_features[2]
 end
@@ -181,7 +188,7 @@ function plot_data!(df, model::Model)
     plot_data = PlotData[]
     isempty(model.feature[]) && return nothing
 
-    ids = sample(1:nrow(df), sample_size, replace=false, ordered=true)
+    ids = sample(rng, 1:nrow(df), sample_size, replace=false, ordered=true)
     df_sample = df[ids, :]
     @info "df size" size(df_sample)
     add_scores!(df_sample)
@@ -193,11 +200,6 @@ function plot_data!(df, model::Model)
     data_gbt = run_shap_gbt(df_sample, "gbt")
     feat_gbt = get_feat_importance(data_gbt)
     shap_gbt = plot_shap(data_gbt, model.feature[])
-
-    # push!(plot_data, PlotData(x = df[:, model.feature[]], y = df[:, "score"],
-    #     plot = "scatter", mode = "markers", marker = PlotDataMarker(color = iris_colors[s]), name = "test"))
-
-    # push!(plot_data, PlotData(x = rand(10), y = rand(10), plot = "scatter", mode = "markers", marker = PlotDataMarker(color = "red"), name = "test"))
 
     # SHAP one-way effect
     push!(plot_data, PlotData(x=shap_flux[:df][:, :feature_value], y=shap_flux[:df][:, :shap_effect],
@@ -221,6 +223,16 @@ function plot_data!(df, model::Model)
         name="gbt"))
 
     model.plot_data[] = plot_data
+
+    model.plot_layout[] = PlotlyBase.Layout(
+        title="SHAP effect",
+        plot_bgcolor="white",
+        xaxis=attr(title="Feature value"),
+        yaxis=attr(title="Effect"),
+        # margin=attr(l=0, t=0, r=0, b=0),
+        legend=attr(orientation="h"),
+        autosize=true,
+    )
 
     # feature importance
     hist_flux_data = PlotData[]
@@ -249,6 +261,24 @@ function plot_data!(df, model::Model)
     return nothing
 end
 
+
+"""
+    one_way_plot!(df, m::Model)
+
+Return one-way effect plot based on selected var
+"""
+function one_way_plot!(df, m::Model)
+
+    df_bins = ScoringEngineDemo.one_way_data(df, m.feature[], "flux", 10; method=m.groupmethod[])
+    p = ScoringEngineDemo.one_way_plot_weights(df_bins)
+
+    m.plt_base_trace[] = p[:traces]
+    m.plt_base_layout[] = p[:layout]
+    m.plt_base_config[] = p[:config]
+
+    return nothing
+end
+
 function prepare_report(df, model::Model)
     isempty(model.feature[]) && return nothing
     ids = sample(1:nrow(df), sample_size, replace=false, ordered=true)
@@ -272,11 +302,11 @@ function prepare_report(df, model::Model)
     return data
 end
 
+function handlers(model::Model)
 
-function ui(model::Model)
-
-    onany(model.feature, model.features, model.isready) do (_...)
+    onany(model.feature, model.features, model.isready, model.groupmethod) do (_...)
         plot_data!(df_tot, model)
+        one_way_plot!(df_preds, model)
     end
 
     on(model.weave) do _
@@ -292,83 +322,13 @@ function ui(model::Model)
         end
     end
 
-    page(
-        model,
-        class="container",
-        title="Model Diagnosis",
-        head_content=Genie.Assets.favicon_support(),
-        prepend=style(
-            """
-            tr:nth-child(even) {
-              background: #F8F8F8 !important;
-            }
-            .modebar {
-              display: none!important;
-            }
-            .st-module {
-              background-color: #FFF;
-              border-radius: 2px;
-              box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.04);
-              padding: 0px 0px 0px 0px;
-              margin: 0px 0px 0px 0px;
-            }
-            .stipple-core .st-module > h5,
-            .stipple-core .st-module > h6 {
-              border-bottom: 0px !important;
-            }
-            """
-        ),
-        [
-            heading("Model Diagnosis"),
-            row([
-                cell(
-                    class="st-module col-sm-3",
-                    [
-                        h6("Feature"),
-                        Stipple.select(:feature; options=:features),
-                        br(),
-                        btn("Report", @click("weave = true"), color="secondary"),
-                    ]
-                )
-                # cell(
-                #     class = "st-module col-sm-3",
-                #     [
-                #         btn("Report", @click("weave = true"), color = "secondary"),
-                #     ]
-                # ),
-            ]),
-            row([
-                cell(
-                    class="st-module",
-                    [
-                        h5("One-way effect"),
-                        plot(:plot_data, layout=:plot_layout, config=:plot_config)
-                    ]
-                )
-            ]),
-            row([
-                cell(class="st-module",
-                    [
-                        plot(:hist_flux_data, layout=:hist_flux_layout, config=:hist_flux_config)
-                    ]),
-                cell(class="st-module",
-                    [
-                        plot(:hist_gbt_data, layout=:hist_gbt_layout, config=:hist_gbt_config)
-                    ])
-            ]),
-            row([
-                cell(class="st-module",
-                    [
-                        plot(:plt_base_trace, layout=:plt_base_layout, config=:plt_base_config)
-                    ])
-            ])
-        ],
-        @iif(:isready)
-    )
+    return model
 end
 
+include("ui.jl")
+
 route("/") do
-    Model |> init |> ui |> html
+    Model |> init |> handlers |> ui |> html
 end
 
 Stipple.Genie.startup(8000, "0.0.0.0", async=false)

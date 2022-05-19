@@ -160,38 +160,6 @@ ids_reference = sample(1:nrow(df_tot), reference_size, replace=false, ordered=tr
 df_preds = copy(df_tot)
 @time add_scores!(df_preds)
 
-
-"""
-binvar: cut a variable into nbins
-"""
-function binvar(x, nbins; method="quantiles")
-
-    if method == "quantiles"
-        edges = quantile(x, (1:nbins) / nbins)
-        println(edges)
-        if length(edges) == 0
-            edges = [minimum(x)]
-        end
-
-    elseif method == "linear"
-        edges = range(minimum(x), maximum(x), nbins + 1)
-        println(edges)
-    end
-    x_bin = searchsortedlast.(Ref(edges[1:end-1]), x) .+ 1
-    return x_bin
-end
-
-"""
-    One-way plot
-"""
-function one_way_data(df, groupvar, targets, nbins; method="quantiles")
-    targets = isa(targets, String) && [targets]
-    dfs = DataFrames.select(df, groupvar => (x -> binvar(x, nbins; method)) => "var_bins", "flux")
-    dfg = groupby(dfs, "var_bins")
-    dfg = combine(dfg, targets .=> mean .=> targets, targets[1] => sum => "_weight")
-    return dfg
-end
-
 method = "quantiles"
 df_bins = one_way_data(df_preds, "drv_age1", "flux", 10; method);
 df_bins = one_way_data(df_preds, "vh_value", "flux", 10; method)
@@ -202,83 +170,6 @@ df_bins = one_way_data(df_preds, "vh_weight", "flux", 10; method)
 one_way_plot(df_bins)
 one_way_plot_weights(df_bins)
 
-"""
-    One-way plot
-"""
-function one_way_plot(df)
-
-    trace_1 = PlotlyBase.scatter(
-        x=df[:, :var_bins],
-        y=df[:, :flux],
-        mode="markers+lines",
-        name="Mean target",
-        marker=attr(color=j_blue, size=5, opacity=1.0))
-
-    p_layout = PlotlyBase.Layout(
-        width=800,
-        height=500,
-        # yaxis_range=[0, max_y],
-        title="Title",
-        plot_bgcolor="white",
-        xaxis=attr(title="Feature value"),
-        yaxis=attr(title="SHAP effect", linecolor="black", gridcolor="lightgray", overlaying="y", side="left"),
-        legend=attr(orientation="h"),
-        # margin=attr(l=0, t=50, r=50, b=0),
-        autosize=true)
-
-    p_config = PlotlyBase.PlotConfig(displaylogo=false, displayModeBar=false, responsive=false)
-
-    p = PlotlyBase.Plot(
-        [trace_1],
-        p_layout;
-        config=p_config)
-
-    return p
-end
-
-function one_way_plot_weights(df)
-
-    trace_1 = PlotlyBase.bar(
-        x=df[:, :var_bins],
-        y=df[:, :_weight],
-        name="Weights",
-        marker=attr(color="gray", size=5, opacity=0.5))
-
-    trace_2 = PlotlyBase.scatter(
-        x=df[:, :var_bins],
-        y=df[:, :flux],
-        mode="markers+lines",
-        name="trace A",
-        yaxis="y2",
-        marker=attr(color=j_blue, size=5, opacity=1.0))
-
-    p_layout = PlotlyBase.Layout(
-        width=800,
-        height=500,
-        # yaxis_range=[0, max_y],
-        title="Title",
-        plot_bgcolor="white",
-        xaxis=attr(title="Feature value"),
-        yaxis=attr(title="Weight", side="right"),
-        yaxis2=attr(title="SHAP effect", linecolor="black", gridcolor="lightgray", overlaying="y", side="left"),
-        # margin=attr(l=0, t=50, r=50, b=0),
-        legend=attr(orientation="h"),
-        autosize=true)
-
-    p_config = PlotlyBase.PlotConfig(displaylogo=false, displayModeBar=false, responsive=false)
-
-    p = PlotlyBase.Plot(
-        [trace_1],
-        p_layout;
-        config=p_config)
-
-    p = PlotlyBase.Plot(
-        [trace_1, trace_2],
-        p_layout;
-        config=p_config)
-
-    return p
-end
 
 df_explain = df_tot[ids_explain, :]
 df_reference = df_tot[ids_reference, :]
