@@ -304,23 +304,36 @@ end
 
 function handlers(model::Model)
 
-    onany(model.feature, model.features, model.isready, model.groupmethod) do (_...)
+    on(model.isready) do _
         plot_data!(df_tot, model)
         one_way_plot!(df_preds, model)
     end
 
-    on(model.weave) do _
-        if (model.weave[])
-            data = prepare_report(df_tot, model)
-            weave("report.jmd",
-                doctype="pandoc2html",
-                pandoc_options=["--toc", "--toc-depth= 3", "--self-contained"],
-                out_path=@__DIR__,
-                fig_path=joinpath(@__DIR__, "fig"),
-                args=data)
-            model.weave[] = false
-        end
+    on(model.feature) do (_...)
+        plot_data!(df_tot, model)
+        one_way_plot!(df_preds, model)
     end
+
+    on(model.groupmethod) do _
+        one_way_plot!(df_preds, model)
+    end
+
+    on(model.weave) do (_...)
+        plot_data!(df_tot, model)
+    end
+
+    # on(model.weave) do _
+    #     if (model.weave[])
+    #         data = prepare_report(df_tot, model)
+    #         weave("report.jmd",
+    #             doctype="pandoc2html",
+    #             pandoc_options=["--toc", "--toc-depth= 3", "--self-contained"],
+    #             out_path=@__DIR__,
+    #             fig_path=joinpath(@__DIR__, "fig"),
+    #             args=data)
+    #         model.weave[] = false
+    #     end
+    # end
 
     return model
 end

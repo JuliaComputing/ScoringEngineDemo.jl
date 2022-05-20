@@ -95,7 +95,7 @@ function one_way_plot_weights(df)
         # yaxis_range=[0, max_y],
         title="One-way effect",
         plot_bgcolor="white",
-        xaxis=attr(title="Effect"),
+        xaxis=attr(title="Feature groups"),
         yaxis=attr(title="Weight", side="right"),
         yaxis2=attr(title="Target value", linecolor="black", gridcolor="lightgray", overlaying="y", side="left"),
         # margin=attr(l=0, t=0, r=0, b=0),

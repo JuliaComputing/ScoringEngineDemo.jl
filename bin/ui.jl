@@ -24,6 +24,13 @@ function ui(model::Model)
                             radio(label="Linear", fieldname=:groupmethod, val="linear", dense=false),
                         ])
                     ]),
+                    cell(class="st-module col-sm-3",
+                    [
+                        row(h5("New sample:")),
+                        row([
+                            btn("Report", @click("weave = true"), color="secondary"),
+                        ])
+                    ]),
             ]),
             # row(h5("One-way effect")),
             row(
