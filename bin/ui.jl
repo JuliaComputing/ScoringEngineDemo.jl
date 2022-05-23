@@ -8,15 +8,14 @@ function ui(model::Model)
         [
             heading("Model Diagnosis"),
             row([
-                cell(class="st-module col-sm-3",
+                cell(class="st-module",
                     [
                         row(h5("Feature:")),
                         row([
                             Stipple.select(:feature; options=:features)
-                            # btn("Report", @click("weave = true"), color="secondary"),
                         ])
                     ]),
-                cell(class="st-module col-sm-3",
+                cell(class="st-module",
                     [
                         row(h5("Group Method:")),
                         row([
@@ -24,35 +23,48 @@ function ui(model::Model)
                             radio(label="Linear", fieldname=:groupmethod, val="linear", dense=false),
                         ])
                     ]),
-                    cell(class="st-module col-sm-3",
+                cell(class="st-module",
                     [
                         row(h5("New sample:")),
                         row([
-                            btn("Report", @click("weave = true"), color="secondary"),
+                            btn("Resample", @click("resample = true"), color="secondary"),
                         ])
                     ]),
+                cell(class="st-module",
+                    [
+                        row(h5("Another functionality:"))
+                    ]),
             ]),
-            # row(h5("One-way effect")),
             row(
                 [
                     cell(class="st-module",
                         [
-                            plot(:plt_base_trace, layout=:plt_base_layout, config=:plt_base_config)
+                            plot(:one_way_traces, layout=:one_way_layout, config=:one_way_config)
                         ])
                     cell(class="st-module",
                         [
-                            plot(:plot_data, layout=:plot_layout, config=:plot_config)
+                            plot(:shap_effect_traces, layout=:shap_effect_layout, config=:shap_effect_config)
                         ]
                     )
                 ]),
             row([
                 cell(class="st-module",
                     [
-                        plot(:hist_flux_data, layout=:hist_flux_layout, config=:hist_flux_config)
+                        plot(:explain_flux_traces, layout=:explain_flux_layout, config=:explain_flux_config)
                     ]),
                 cell(class="st-module",
                     [
-                        plot(:hist_gbt_data, layout=:hist_gbt_layout, config=:hist_gbt_config)
+                        plot(:explain_gbt_traces, layout=:explain_gbt_layout, config=:explain_gbt_config)
+                    ])
+            ]),
+            row([
+                cell(class="st-module",
+                    [
+                        plot(:hist_flux_traces, layout=:hist_flux_layout, config=:hist_flux_config)
+                    ]),
+                cell(class="st-module",
+                    [
+                        plot(:hist_gbt_traces, layout=:hist_gbt_layout, config=:hist_gbt_config)
                     ])
             ]),
         ],
