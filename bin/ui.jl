@@ -10,14 +10,14 @@ function ui(model::Model)
             row([
                 cell(class="st-module",
                     [
-                        row(h5("Feature:")),
+                        row(h5("Feature")),
                         row([
                             Stipple.select(:feature; options=:features)
                         ])
                     ]),
                 cell(class="st-module",
                     [
-                        row(h5("Group Method:")),
+                        row(h5("Group Method")),
                         row([
                             radio(label="Quantiles", fieldname=:groupmethod, val="quantiles", dense=false),
                             radio(label="Linear", fieldname=:groupmethod, val="linear", dense=false),
@@ -25,15 +25,16 @@ function ui(model::Model)
                     ]),
                 cell(class="st-module",
                     [
-                        row(h5("New sample:")),
-                        row([
-                            btn("Resample", @click("resample = true"), color="secondary"),
-                        ])
+                        row(h5("Sample size")),
+                        slider(10:5:100, :sample_size; label=true)
                     ]),
                 cell(class="st-module",
                     [
-                        row(h5("Another functionality:"))
-                    ]),
+                        row(h5("New sampling")),
+                        row([
+                            btn("Resample", @click("resample = true"), color="secondary"),
+                        ])
+                    ])
             ]),
             row(
                 [
