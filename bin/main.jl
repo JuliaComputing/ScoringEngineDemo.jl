@@ -3,7 +3,8 @@
 @info "readdir(@__DIR__): " readdir(@__DIR__)
 
 ENV["GENIE_ENV"] = "dev"
-
+ENV["BASEPATH"] = "/proxy/8000/"
+ 
 @info "Initializing packages"
 using Revise
 using ScoringEngineDemo
@@ -28,9 +29,12 @@ include("setup.jl")
 includet("app.jl")
 includet("ui.jl")
 
+# Stipple.Genie.config.base_path = "/proxy/8000/"
+Genie.config.base_path = "/proxy/8000/"
+
 route("/") do
     Model |> init |> handlers |> ui |> html
 end
 
-Stipple.Genie.startup(8000, "0.0.0.0", async=false)
+Genie.startup(8000, "0.0.0.0", async=false)
 # down()
