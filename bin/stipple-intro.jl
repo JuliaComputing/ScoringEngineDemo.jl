@@ -28,7 +28,7 @@ function handlers(model::Model)
     on(model.isready) do _
     end
 
-    on(model.resample) do _
+    onany(model.sample_size, model.resample) do _
         if model.resample[]
             model.resample[] = false
         end
