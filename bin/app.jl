@@ -156,7 +156,7 @@ function handlers(model::Model)
         one_way_plot!(df_preds, model)
     end
 
-    onany(model.sample_size) do _
+    onany(model.sample_size) do (_...)
         shap_effect_plot!(df_tot, model)
         shap_explain_plot!(df_tot, model)
     end

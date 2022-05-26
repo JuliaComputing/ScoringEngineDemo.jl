@@ -27,29 +27,31 @@ function handlers(model::Model)
 
     on(model.isready) do _
     end
-
-    onany(model.sample_size, model.resample) do _
+    
+    onany(model.sample_size, model.resample) do (_...)
         if model.resample[]
+            @info "resample triggered"
+            model.feature[] = string(rand(100:999))
             model.resample[] = false
         end
     end
+
     return model
 end
 
-function ui(model::Model)
-
+function ui(m::Model)
     Stipple.page(
-        model,
+        m,
         class="container",
         title="Stipple App",
         head_content=Genie.Assets.favicon_support(),
         [
             heading("Stipple App"),
             row([
-                cell(class="st-module", h5("Feature")),
+                cell(class="st-module", h5("", @text(:feature))),
                 cell(class="st-module", h5("Group Method")),
                 cell(class="st-module", h5("Sample size")),
-                cell(class="st-module", h5("New sampling"))
+                btn("Resample", @click("resample = true"), color="secondary")
             ]),
             row(
                 [

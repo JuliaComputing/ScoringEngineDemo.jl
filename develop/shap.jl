@@ -1,8 +1,6 @@
 @info "Initializing packages"
 using ScoringEngineDemo
 using BSON
-using HTTP
-using Sockets
 using JSON3
 using DataFrames
 using PlotlyBase
@@ -104,14 +102,15 @@ const rng = Random.MersenneTwister(123)
 ############################
 # SHAP importance
 ############################
-sample_size = 50
-ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
+sample_size = 30
+explain_size = 50
+ids = sample(rng, 1:nrow(df_tot), explain_size, replace=false, ordered=true)
 df_sample = df_tot[ids, :]
 
-@time df_shap_flux = run_shap(df_sample, model="flux", target_features=features_importance);
+@time df_shap_flux = run_shap(df_sample, model="flux"; sample_size, reference=df_tot, target_features=features_importance);
 df_importance_flux = get_shap_importance(df_shap_flux)
 
-@time df_shap_gbt = run_shap(df_sample, model="gbt", target_features=features_importance);
+@time df_shap_gbt = run_shap(df_sample, model="gbt"; sample_size, reference=df_tot, target_features=features_importance);
 df_importance_gbt = get_shap_importance(df_shap_gbt)
 
 p_importance_flux = plot_shap_importance(df_importance_flux, color=j_purple, title="Flux feature importance");
@@ -123,14 +122,15 @@ PlotlyBase.Plot(p_importance_gbt[:traces], p_importance_gbt[:layout]; config=p_i
 ############################
 # SHAP effect
 ############################
-sample_size = 50
-ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
+sample_size = 30
+explain_size = 50
+ids = sample(rng, 1:nrow(df_tot), explain_size, replace=false, ordered=true)
 df_sample = df_tot[ids, :]
 
-df_shap_flux = run_shap(df_sample, model="flux"; reference = df_tot, target_features=["vh_age"])
+df_shap_flux = run_shap(df_sample, model="flux"; reference=df_tot, target_features=["vh_age"])
 shap_effect_flux = get_shap_effect(df_shap_flux, feat="vh_age")
 
-df_shap_gbt = run_shap(df_sample, model="gbt"; reference = df_tot, target_features=["vh_age"])
+df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df_tot, target_features=["vh_age"])
 shap_effect_gbt = get_shap_effect(df_shap_gbt, feat="vh_age")
 
 p_flux = plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
@@ -148,10 +148,10 @@ sample_size = 1
 ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
 df_sample = df_tot[ids, :]
 
-@time df_shap_flux = run_shap(df_sample, model="flux"; reference = df_tot, target_features=features_importance)
+@time df_shap_flux = run_shap(df_sample, model="flux"; reference=df_tot, target_features=features_importance)
 df_explain_flux = get_shap_explain(df_shap_flux)
 
-@time df_shap_gbt = run_shap(df_sample, model="gbt"; reference = df_tot, target_features=features_importance)
+@time df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df_tot, target_features=features_importance)
 df_explain_gbt = get_shap_explain(df_shap_gbt)
 
 p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain", name="flux")
