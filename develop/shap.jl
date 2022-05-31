@@ -107,10 +107,10 @@ explain_size = 50
 ids = sample(rng, 1:nrow(df_tot), explain_size, replace=false, ordered=true)
 df_sample = df_tot[ids, :]
 
-@time df_shap_flux = run_shap(df_sample, model="flux"; sample_size, reference=df_tot, target_features=features_importance);
+df_shap_flux = run_shap(df_sample, model="flux"; sample_size, reference=df_tot, target_features=features_importance);
 df_importance_flux = get_shap_importance(df_shap_flux)
 
-@time df_shap_gbt = run_shap(df_sample, model="gbt"; sample_size, reference=df_tot, target_features=features_importance);
+df_shap_gbt = run_shap(df_sample, model="gbt"; sample_size, reference=df_tot, target_features=features_importance);
 df_importance_gbt = get_shap_importance(df_shap_gbt)
 
 p_importance_flux = plot_shap_importance(df_importance_flux, color=j_purple, title="Flux feature importance");
@@ -148,10 +148,10 @@ sample_size = 1
 ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
 df_sample = df_tot[ids, :]
 
-@time df_shap_flux = run_shap(df_sample, model="flux"; reference=df_tot, target_features=features_importance)
+df_shap_flux = run_shap(df_sample, model="flux"; reference=df_tot, target_features=features_importance)
 df_explain_flux = get_shap_explain(df_shap_flux)
 
-@time df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df_tot, target_features=features_importance)
+df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df_tot, target_features=features_importance)
 df_explain_gbt = get_shap_explain(df_shap_gbt)
 
 p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain", name="flux")
