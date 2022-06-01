@@ -24,6 +24,17 @@ Starting the scoring engine:
 docker run -it -d -p 8008:8008 -t scoring:test 
 ```
 
+### Running the project locally
+
+```bash
+~/ScoringEngineDemo.jl $ julia --project
+julia> # ] enter pkg mode
+(ScoringEngineDemo) pkg> instantiate
+(ScoringEngineDemo) pkg> # hit backspace to return to julia repl mode
+julia> include("bin/main.jl")
+```
+App should be running http://0.0.0.0:8000 
+
 ### Notes
 
 Docker images are quite big, Julia taking ~400M.
