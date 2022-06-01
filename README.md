@@ -5,23 +5,29 @@ Demonstration of a model deployment workflow.
 - Reproducible preprocessing pipeline
 - Flux MLP & EvoTrees logistics models
 - Preproc/model inference through HTTP.jl
-- Dockerfile build receipe
-
-Ad-hoc Monitoring examples:
-
-- Calling the API
-- Model explanation with SHAP
+- Stipple interactive dashboard for data exploration and model explainability
 
 Work derived from [Insurance-pricing-game](https://www.aicrowd.com/challenges/insurance-pricing-game) challenge.
 
-Building image:
+### Running on JuliaHub
+
+Add `ScoringEngineDemo.jl` as a Custom App. 
+Launch the app, specifying port 8000. This will run the Stipple Dashboard.
+
+### Docker
+
+Building and running API service container:
+
 ```
-docker build . -f docker\\ubuntu\\Dockerfile -t scoring:test
+docker build . -f docker/api/Dockerfile -t scoring:api
+docker run -it -d --rm -p 8008:8008 -t scoring:api
 ```
 
-Starting the scoring engine:
+Building and running Stipple dashboard container:
+
 ```
-docker run -it -d -p 8008:8008 -t scoring:test 
+docker build . -f docker/stipple/Dockerfile -t scoring:stipple
+docker run -it -d --rm -p 8000:8000 -t scoring:stipple
 ```
 
 ### Notes
