@@ -12,6 +12,7 @@ using BSON
 using HTTP
 using Sockets
 using JSON3
+using JSONTables
 using DataFrames
 using Stipple
 using StippleUI
