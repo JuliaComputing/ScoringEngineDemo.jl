@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV JULIA_VERSION 1.6.5
+ENV JULIA_VERSION 1.7.2
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y apt-utils
 RUN apt-get install -y apt-transport-https ca-certificates wget
@@ -9,7 +9,7 @@ RUN apt-get install -y apt-transport-https ca-certificates wget
 # install Julia
 RUN mkdir /julia
 
-RUN cd /julia && wget --quiet https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \ 
+RUN cd /julia && wget --quiet https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \ 
 	tar xzf julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \ 
 	rm julia-${JULIA_VERSION}-linux-x86_64.tar.gz
 RUN ln -s /julia/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/julia
@@ -23,6 +23,14 @@ RUN julia -e 'using Pkg; Pkg.add("JSON3")'
 RUN julia -e 'using Pkg; Pkg.add("JSONTables")'
 RUN julia -e 'using Pkg; Pkg.add("HTTP")'
 RUN julia -e 'using Pkg; Pkg.add("Sockets")'
+RUN julia -e 'using Pkg; Pkg.add("Revise")'
+RUN julia -e 'using Pkg; Pkg.add("ShapML")'
+RUN julia -e 'using Pkg; Pkg.add("Weave")'
+RUN julia -e 'using Pkg; Pkg.add("Stipple")'
+RUN julia -e 'using Pkg; Pkg.add("StippleUI")'
+RUN julia -e 'using Pkg; Pkg.add("StipplePlotly")'
+RUN julia -e 'using Pkg; Pkg.add("PlotlyBase")'
+RUN julia -e 'using Pkg; Pkg.add("StatsBase")'
 
 RUN mkdir -p /usr/src/app
 COPY ../../ /usr/src/app
