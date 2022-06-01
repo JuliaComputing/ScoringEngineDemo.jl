@@ -9,28 +9,7 @@ Demonstration of a model deployment workflow.
 
 Work derived from [Insurance-pricing-game](https://www.aicrowd.com/challenges/insurance-pricing-game) challenge.
 
-### Running on JuliaHub
-
-Add `ScoringEngineDemo.jl` as a Custom App. 
-Launch the app, specifying port 8000. This will run the Stipple Dashboard.
-
-### Docker
-
-Building and running API service container:
-
-```
-docker build . -f docker/api/Dockerfile -t scoring:api
-docker run -it -d --rm -p 8008:8008 -t scoring:api
-```
-
-Building and running Stipple dashboard container:
-
-```
-docker build . -f docker/stipple/Dockerfile -t scoring:stipple
-docker run -it -d --rm -p 8000:8000 -t scoring:stipple
-```
-
-### Running the project locally
+### Running locally
 
 ```bash
 ~/ScoringEngineDemo.jl $ julia --project
@@ -40,6 +19,27 @@ julia> # ] enter pkg mode
 julia> include("bin/main.jl")
 ```
 App should be running http://0.0.0.0:8000 
+
+### Running on JuliaHub
+
+Add `ScoringEngineDemo.jl` as a Custom App. 
+Launch the app, specifying port 8000. This will run the Stipple Dashboard.
+
+### Running with Docker
+
+Building and running API service container:
+
+```bash
+docker build . -f docker/api/Dockerfile -t scoring:api
+docker run -it -d --rm -p 8008:8008 -t scoring:api
+```
+
+Building and running Stipple dashboard container:
+
+```bash
+docker build . -f docker/stipple/Dockerfile -t scoring:stipple
+docker run -it -d --rm -p 8000:8000 -t scoring:stipple
+```
 
 ### Notes
 
