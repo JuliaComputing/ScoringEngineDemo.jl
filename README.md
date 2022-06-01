@@ -30,6 +30,17 @@ docker build . -f docker/stipple/Dockerfile -t scoring:stipple
 docker run -it -d --rm -p 8000:8000 -t scoring:stipple
 ```
 
+### Running the project locally
+
+```bash
+~/ScoringEngineDemo.jl $ julia --project
+julia> # ] enter pkg mode
+(ScoringEngineDemo) pkg> instantiate
+(ScoringEngineDemo) pkg> # hit backspace to return to julia repl mode
+julia> include("bin/main.jl")
+```
+App should be running http://0.0.0.0:8000 
+
 ### Notes
 
 Docker images are quite big, Julia taking ~400M.
