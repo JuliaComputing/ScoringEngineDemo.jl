@@ -70,11 +70,6 @@ function one_way_plot(df; targets)
 
     p_config = PlotlyBase.PlotConfig(displaylogo=false, displayModeBar=false, responsive=false)
 
-    # p = PlotlyBase.Plot(
-    #     [trace_1],
-    #     p_layout;
-    #     config=p_config)
-
     return (
         traces=traces,
         layout=p_layout,

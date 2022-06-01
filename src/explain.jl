@@ -1,3 +1,54 @@
+# function pred_shap_flux(model, df)
+#     scores = infer_flux(df::DataFrame)
+#     pred_df = DataFrame(score=scores)
+#     return pred_df
+# end
+
+# function pred_shap_gbt(model, df)
+#     scores = infer_gbt(df::DataFrame)
+#     pred_df = DataFrame(score=scores)
+#     return pred_df
+# end
+
+@info "Loading pred_shap"
+function pred_shap(model, df)
+    if model == "flux"
+        scores = infer_flux(df::DataFrame)
+    elseif model == "gbt"
+        scores = infer_gbt(df::DataFrame)
+    else
+        error("Argument `model` needs to be one of: `flux` or `gbt`.")
+    end
+    pred_df = DataFrame(score=scores)
+    return pred_df
+end
+
+@info "Loading run_shap"
+
+"""
+    run_shap(df; reference=nothing, model, target_features, sample_size=30)
+
+Returns raw SHAP values for a given DataFrame. Model can be either "flux" or "gbt".
+"""
+function run_shap(df; reference=nothing, model, target_features, sample_size=30)
+
+    @assert model ∈ ["flux", "gbt"]
+
+    isnothing(reference) ? reference = copy(df) : nothing
+    data_shap = ShapML.shap(
+        explain=df,
+        reference=reference,
+        target_features=target_features,
+        model=model,
+        predict_function=pred_shap,
+        sample_size=sample_size,
+        seed=123)
+    return data_shap
+end
+
+
+@info "Loading get_shap_importance"
+
 """
     get_shap_importance(df_shap)
 Returns feature importance dataframe from a SHAP run result.

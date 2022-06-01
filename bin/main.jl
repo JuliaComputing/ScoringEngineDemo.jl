@@ -19,9 +19,7 @@ using StippleUI
 using StipplePlotly
 using PlotlyBase
 using Random
-
-using ShapML
-using Weave
+# using Weave
 
 using StatsBase: sample
 using Statistics: mean, std

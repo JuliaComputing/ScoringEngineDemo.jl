@@ -69,10 +69,10 @@ function shap_effect_plot!(df, m::Model)
     ids = sample(rng, 1:nrow(df), m.sample_size[], replace=false, ordered=true)
     df_sample = df[ids, :]
 
-    df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=[m.feature[]])
+    df_shap_flux = ScoringEngineDemo.run_shap(df_sample, model="flux"; reference=df, target_features=[m.feature[]])
     shap_effect_flux = get_shap_effect(df_shap_flux, feat=m.feature[])
 
-    df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=[m.feature[]])
+    df_shap_gbt = ScoringEngineDemo.run_shap(df_sample, model="gbt"; reference=df, target_features=[m.feature[]])
     shap_effect_gbt = get_shap_effect(df_shap_gbt, feat=m.feature[])
 
     p_flux = plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
@@ -91,10 +91,10 @@ function shap_explain_plot!(df, m::Model)
     ids = sample(rng, 1:nrow(df), sample_size, replace=false, ordered=true)
     df_sample = df[ids, :]
 
-    df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=features_importance)
+    df_shap_flux = ScoringEngineDemo.run_shap(df_sample, model="flux"; reference=df, target_features=features_importance)
     df_explain_flux = get_shap_explain(df_shap_flux)
 
-    df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=features_importance)
+    df_shap_gbt = ScoringEngineDemo.run_shap(df_sample, model="gbt"; reference=df, target_features=features_importance)
     df_explain_gbt = get_shap_explain(df_shap_gbt)
 
     p_flux = plot_shap_explain(df_explain_flux, title="Flux explain")
