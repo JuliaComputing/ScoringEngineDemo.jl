@@ -4,7 +4,7 @@
 
 ENV["GENIE_ENV"] = "dev"
 # ENV["BASEPATH"] = "/proxy/8000/"
- 
+
 @info "Initializing packages"
 using Revise
 using ScoringEngineDemo
